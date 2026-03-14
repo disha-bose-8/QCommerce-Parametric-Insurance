@@ -254,20 +254,6 @@ We chose a web-first architecture for Phase 1 due to faster development cycles, 
 | **Phase 2 — Scale** | Mar 21–Apr 4 | Worker registration flow, live policy creation, dynamic premium engine, 3–5 real API triggers connected, claims automation, Razorpay sandbox payouts |
 | **Phase 3 — Soar** | Apr 5–17 | Advanced fraud detection, full analytics dashboard, predictive payout forecasting, mobile-responsive UI, 5-minute demo video, final pitch deck (PDF) |
 
----
-
-## Repo Structure
-
-```
-QCommerce-Parametric-Insurance/
-├── README.md
-├── docs/phase1/              ← Idea document PDF
-├── frontend/src/             ← React web app
-├── backend/app/              ← FastAPI service
-├── ml/                       ← Risk model and notebooks
-├── mocks/                    ← Mock API JSON files
-└── docker-compose.yml
-```
 
 ---
 
