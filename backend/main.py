@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.api.premium_api import router as premium_router
+from app.api.triggers_api import router as triggers_router
 
 app = FastAPI()
 
@@ -12,6 +14,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(premium_router, prefix="/api/premium")
+app.include_router(triggers_router, prefix="/api/triggers")
 
 #testing
 @app.get("/")
