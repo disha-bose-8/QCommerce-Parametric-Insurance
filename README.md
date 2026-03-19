@@ -148,6 +148,8 @@ Phase 1 uses a rule-based approximation for disruption probability. Phase 2 will
 
 The premium calculation is grounded in the **3–5% of weekly income** benchmark for parametric gig worker coverage, ensuring the premium is always affordable relative to earnings.
 
+Phase 1 uses a rule-based seasonal probability model to estimate disruption likelihood per zone — monsoon months get higher weight, known high-risk zones get a modifier. Phase 2 replaces this with a logistic regression model trained on historical weather, AQI, and order volume data, with XGBoost as the target architecture.
+
 ---
 
 ## AI & Fraud Controls
