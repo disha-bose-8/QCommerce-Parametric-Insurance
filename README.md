@@ -257,8 +257,7 @@ We chose a web-first architecture for Phase 1 due to faster development cycles, 
 
 ---
 
-## Getting Started
-## Adversarial Defense & Anti-Spoofing Strategy
+## Getting Started - Adversarial Defense & Anti-Spoofing Strategy
 
 ### The Threat Model
 
