@@ -1,4 +1,4 @@
-# ShieldPay — AI-Powered Parametric Income Protection
+# QShield — AI-Powered Parametric Income Protection
 ### For Q-Commerce Delivery Partners
 
 > An AI-driven, weekly parametric income protection system that automatically compensates gig workers for verified income loss events — with zero manual claims.
@@ -254,4 +254,83 @@ We chose a web-first architecture for Phase 1 due to faster development cycles, 
 ## Core Value Proposition
 
 > A financially sustainable, AI-powered parametric income stabiliser designed specifically for Q-commerce delivery workers — protecting weekly earnings from measurable external disruptions with zero manual friction.
+
+---
+
+## Getting Started
+---
+## Adversarial Defense & Anti-Spoofing Strategy
+
+### The Threat Model
+
+A coordinated syndicate of workers uses GPS-spoofing apps to fake their location inside a declared weather disruption zone while remaining safely at home — triggering mass false payouts and draining the liquidity pool.
+
+### Why Our Architecture Is Already Harder To Exploit
+
+The most important thing to note: **ShieldPay never triggers a payout based on a worker's GPS location.** Triggers are zone-level, not worker-level. The system asks "is it raining heavily in Zone X?" — not "is this worker standing in rain?" This eliminates the most basic form of GPS spoofing entirely. A worker cannot fake their way into a payout by spoofing their coordinates because their coordinates are never the trigger input.
+
+What a bad actor would actually need to fake is a zone-wide order volume collapse — which requires manipulating platform-level data across hundreds of orders simultaneously, not just their own GPS.
+
+---
+
+### 1. The Differentiation — Genuine Worker vs. Bad Actor
+
+Our AI/ML layer differentiates between a genuinely stranded worker and a bad actor using **behavioral fingerprinting** across three dimensions:
+
+**Activity pattern before the disruption event**
+A genuine worker shows a natural trailing-off of completed orders as conditions worsen — order velocity drops gradually as the weather escalates. A spoofing worker shows an abrupt flat-zero from the start of the disruption window with no gradual decline, because they were never working to begin with.
+
+**Device and session signals**
+- App session activity during the claimed disruption window — is the delivery app open and actively pinging? A genuine worker stuck in rain will have an active session with GPS drift consistent with being stationary in one location. A spoofer's GPS trace is often suspiciously perfect — fixed coordinates with no natural drift, or coordinates that jump in ways inconsistent with how someone actually moves in a storm.
+- Battery drain and network signal patterns — extreme weather correlates with poor network signal. A worker reporting to be in a flood zone with a perfect 5-bar LTE signal is an anomaly worth flagging.
+
+**Zone-level cross-validation**
+Environmental triggers require a dual validation: the weather API must confirm the threshold AND zone-wide order volume must drop ≥ 25% vs the 4-week rolling baseline. A syndicate cannot fake the weather API. They can attempt to suppress orders by coordinating refusals — but a sudden coordinated refusal spike across a zone from a cluster of workers is itself a detectable anomaly, not a cover.
+
+---
+
+### 2. The Data — What We Analyze To Detect A Fraud Ring
+
+Beyond GPS coordinates, our fraud detection layer analyzes the following signals:
+
+| Signal | What It Catches |
+|---|---|
+| Claim timing correlation | Multiple workers in the same zone submitting within seconds of each other — genuine disruptions cause spread-out responses, not synchronized ones |
+| Historical claim rate per worker vs zone baseline | Z-score anomaly detection — workers whose claim rate is statistically improbable compared to peers in the same zone |
+| Order activity gap before disruption | Workers with zero delivery activity in the 2 hours before a disruption event are flagged — genuine workers are typically mid-shift when weather hits |
+| Device GPS drift pattern | Spoofed GPS coordinates show unnatural precision and lack the micro-movement noise of a real device being carried |
+| Social graph clustering | Workers who consistently claim on the same days, in the same zones, with no history of independent claim patterns — suggests coordination |
+| Enrollment timing vs forecast | Workers who enroll just before a high-probability disruption forecast (surge enrolments 24–48 hours before a rain event) trigger elevated scrutiny |
+
+The Z-score anomaly model is already part of our existing fraud controls layer — this simply extends it with the above features.
+
+---
+
+### 3. The UX Balance — Flagging Without Penalizing Honest Workers
+
+False positives are a real risk. A genuine worker in a flood zone may have poor GPS signal, inconsistent app activity, and unusual behavior — precisely because they are in a genuine emergency. Our system handles this with a **tiered response, not a binary block**:
+
+**Tier 1 — Auto-approved (low anomaly score)**
+All signals align. Payout is processed automatically within minutes. No friction for the worker.
+
+**Tier 2 — Soft flag (moderate anomaly score)**
+Payout is held for up to 24 hours pending a lightweight passive review — no action required from the worker. The system checks if zone-level signals continue to corroborate the claim over the next few hours. If they do, payout auto-releases. The worker sees "Payout under verification — expected within 24 hours" in their dashboard, not a rejection.
+
+**Tier 3 — Hard flag (high anomaly score)**
+Payout is held and the worker receives a non-accusatory prompt: "We need to verify your activity for this disruption day. Please confirm you were active in [Zone X] on [Date]." One-tap confirmation with a passive check of app session logs. If confirmed, payout releases. If the worker cannot be verified, the claim is escalated to manual review — not auto-rejected.
+
+**The key principle:** the system never accuses a worker or denies a payout without evidence. A genuine network drop in bad weather is a known edge case — the 24-hour soft hold exists precisely to give the system time to gather corroborating signals before making a decision. Honest workers lose at most 24 hours. Bad actors are caught by the pattern across multiple claims over time, not by a single-event block.
+
+---
+
+### What This Means For The Liquidity Pool
+
+A coordinated syndicate of 500 workers would need to:
+1. All be enrolled with ≥ 3 active days last week (can't mass-enroll day-of)
+2. Trigger a real zone-level order volume collapse (requires platform-side manipulation, not just GPS)
+3. Maintain individually natural behavioral fingerprints across all 500 accounts simultaneously
+4. Not trigger the social graph clustering detector by claiming in sync
+
+This raises the cost of a coordinated attack from "download a GPS spoofer" to "orchestrate a platform-level data manipulation while maintaining individual behavioral cover across 500 accounts." That is not a realistic attack surface for a Telegram syndicate.
+
 
