@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     AQICN_API_KEY: str = ""
     NEWSAPI_KEY: str = ""
     UPTIMEROBOT_API_KEY: str = ""
+
+    DATABASE_URL: str = ""
+    
     ENVIRONMENT: str = "development"
 
     class Config:
