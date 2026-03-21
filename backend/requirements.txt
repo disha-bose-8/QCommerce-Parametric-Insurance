@@ -1,12 +1,6 @@
 fastapi
 uvicorn[standard]
-sqlalchemy
-alembic
-psycopg2-binary
 pydantic
 pydantic-settings
 python-dotenv
 httpx
-scikit-learn
-pandas
-numpy
