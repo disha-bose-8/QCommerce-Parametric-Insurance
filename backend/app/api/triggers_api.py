@@ -51,13 +51,40 @@ async def trigger_aqi(city: str, current_orders: int, baseline_orders: float):
     return result
 
 
-# checks curfew for a zone — mocked
+# checks curfew for a zone
 @router.get("/curfew")
-def trigger_curfew(zone: str):
-    return check_curfew(zone)
+async def trigger_curfew(zone: str):
+    return await check_curfew(zone)
+
+# demo simulate fake curfew/strike for a zone
+@router.get("/curfew/simulate")
+def simulate_curfew(zone: str):
+    return {
+        "trigger_type": "curfew",
+        "triggered": True,
+        "confirmed": True,
+        "source": "newsapi_simulated",
+        "headline": f"Bandh declared in {zone} — all essential services affected",
+        "articles_found": 1,
+        "detail": f"Simulated curfew active in {zone} for demo purposes",
+    }
 
 
-# checks platform outage — mocked
+# checks platform outage
 @router.get("/outage")
-def trigger_outage(platform: str):
-    return check_platform_outage(platform)
+async def trigger_outage(platform: str):
+    return await check_platform_outage(platform)
+
+# demo simulates a fake platform outage 
+
+@router.get("/outage/simulate")
+def simulate_outage(platform: str):
+    return {
+        "trigger_type": "platform_outage",
+        "triggered": True,
+        "confirmed": True,
+        "source": "uptimerobot_simulated",
+        "platform": platform,
+        "status": "down",
+        "detail": f"{platform} has been down for 3+ hours — payout triggered",
+    }

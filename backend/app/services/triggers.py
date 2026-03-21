@@ -6,6 +6,8 @@ import httpx
 # we need the API keys from our config
 from app.core.config import settings
 
+from datetime import datetime, timezone, timedelta
+
 # --- thresholds ---
 RAIN_THRESHOLD = 20.0      # mm per hour — IMD definition of heavy rain
 HEAT_THRESHOLD = 42.0      # degrees celsius
@@ -119,34 +121,103 @@ def dual_validate(env_result: dict, current_orders: int, baseline_orders: float)
     return env_result
 
 
-# mocked — no real govt API exists for curfew
-def check_curfew(zone: str) -> dict:
+async def check_curfew(zone: str) -> dict:
     
-    active_curfews = {}  # add zone: True here to simulate a curfew
-    is_active = active_curfews.get(zone, False)
+    # search NewsAPI for recent curfew/bandh/strike news for this zone
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": f"curfew OR bandh OR strike {zone}",  # search these keywords + city name
+        "apiKey": settings.NEWSAPI_KEY,
+        "language": "en",
+        "sortBy": "publishedAt",  # most recent first
+        "pageSize": 5,            # only need a few results
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, timeout=10)
+        data = response.json()
+    
+    articles = data.get("articles", [])
+    
+    # check if any article is from the last 24 hours
+    
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    
+    recent_articles = []
+    for article in articles:
+        published = article.get("publishedAt", "")
+        if published:
+            # parse the date string from NewsAPI
+            pub_date = datetime.fromisoformat(published.replace("Z", "+00:00"))
+            if pub_date >= cutoff:
+                recent_articles.append(article)
+    
+    triggered = len(recent_articles) > 0
+    
+    # grab the headline that triggered it as proof
+    headline = recent_articles[0]["title"] if recent_articles else None
     
     return {
         "trigger_type": "curfew",
-        "triggered": is_active,
-        "confirmed": is_active,
-        "source": "govt_feed_mocked",
-        "detail": f"Curfew active in {zone}" if is_active else "No active curfew",
+        "triggered": triggered,
+        "confirmed": triggered,
+        "source": "newsapi",
+        "headline": headline,
+        "articles_found": len(recent_articles),
+        "detail": f"Recent curfew/strike news found in {zone}" if triggered else f"No recent curfew/strike news for {zone}",
     }
 
 
-# mocked — no public status API for Zepto/Blinkit
-def check_platform_outage(platform: str) -> dict:
+async def check_platform_outage(platform: str) -> dict:
     
-    active_outages = {}  # add platform: hours here to simulate outage
-    downtime_hours = active_outages.get(platform.lower(), 0.0)
-    triggered = downtime_hours >= 3.0
+    # UptimeRobot API — checks if the platform is currently down
+    url = "https://api.uptimerobot.com/v2/getMonitors"
+    
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    
+    # UptimeRobot uses POST with form data, not GET
+    data = {
+        "api_key": settings.UPTIMEROBOT_API_KEY,
+        "format": "json",
+        "logs": "1",          # include downtime logs
+        "log_limit": "5",     # last 5 logs
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, data=data, headers=headers, timeout=10)
+        result = response.json()
+    
+    # find the monitor matching our platform name
+    monitors = result.get("monitors", [])
+    platform_monitor = None
+    for monitor in monitors:
+        if platform.lower() in monitor["friendly_name"].lower():
+            platform_monitor = monitor
+            break
+    
+    if not platform_monitor:
+        return {
+            "trigger_type": "platform_outage",
+            "triggered": False,
+            "confirmed": False,
+            "source": "uptimerobot",
+            "detail": f"No monitor found for {platform}",
+        }
+    
+    # UptimeRobot status: 2 = up, 8 = seems down, 9 = down
+    status = platform_monitor.get("status", 2)
+    triggered = status in [8, 9]
+    
+    status_labels = {2: "up", 8: "seems down", 9: "down"}
     
     return {
         "trigger_type": "platform_outage",
         "triggered": triggered,
         "confirmed": triggered,
-        "raw_value": downtime_hours,
-        "threshold": 3.0,
-        "unit": "hours",
-        "source": "platform_status_mocked",
+        "raw_value": status,
+        "source": "uptimerobot",
+        "platform": platform,
+        "status": status_labels.get(status, "unknown"),
+        "detail": f"{platform} is {status_labels.get(status, 'unknown')}",
     }
+
