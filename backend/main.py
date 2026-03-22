@@ -22,4 +22,4 @@ app.include_router(triggers_router, prefix="/api/triggers")
 @app.get("/")
 
 def root():
-    return {"status": "ok", "service": "ShieldPay API","env": settings.ENVIRONMENT}
+    return {"status": "ok", "service": "QShield API","env": settings.ENVIRONMENT}
