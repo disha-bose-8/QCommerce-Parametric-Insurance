@@ -6,9 +6,11 @@ from app.api.triggers_api import router as triggers_router
 from app.core.database import engine
 from app.models.models import Base
 from app.api.worker_api import router as worker_router
+from app.api.policy_api import router as policy_router
 
 app = FastAPI()
 app.include_router(worker_router, prefix="/api/worker")
+app.include_router(policy_router, prefix="/api/policy")
 
 #create table
 Base.metadata.create_all(bind=engine)

@@ -9,6 +9,7 @@ class Worker(Base):
     name = Column(String)
     zone = Column(String)
     weekly_income = Column(Float)
+    platform = Column(String)
 
 #Policy Table
 class Policy(Base):
