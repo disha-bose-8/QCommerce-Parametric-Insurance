@@ -8,7 +8,8 @@ DATABASE_URL = settings.DATABASE_URL
 #create engine
 engine = create_engine(
     DATABASE_URL,
-    echo=True  # optional: shows SQL logs (good for debugging)
+    connect_args={"sslmode": "require"},
+    echo=True
 )
 
 #create session
