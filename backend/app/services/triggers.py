@@ -154,7 +154,7 @@ async def check_curfew(zone: str) -> dict:
     
     triggered = len(recent_articles) > 0
     
-    # grab the headline that triggered it as proof
+    # grab headline that triggered it as proof
     headline = recent_articles[0]["title"] if recent_articles else None
     
     return {
