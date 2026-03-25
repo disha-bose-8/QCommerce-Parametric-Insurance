@@ -8,12 +8,12 @@ from app.models.models import Base
 from app.api.worker_api import router as worker_router
 from app.api.policy_api import router as policy_router
 from app.api.payout_api import router as payout_router
-
+from app.api import premium
 app = FastAPI()
 app.include_router(worker_router, prefix="/api/worker")
 app.include_router(policy_router, prefix="/api/policy")
 app.include_router(payout_router, prefix="/api/payout")
-
+app.include_router(premium.router)
 #create table
 Base.metadata.create_all(bind=engine)
 
