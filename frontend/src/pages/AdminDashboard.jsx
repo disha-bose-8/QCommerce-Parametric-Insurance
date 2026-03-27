@@ -1,4 +1,4 @@
-import StatCards from "../components/admin/StatCards";
+/*import StatCards from "../components/admin/StatCards";
 import ZoneTable from "../components/admin/ZoneTable";
 import WorkerList from "../components/admin/WorkerList";
 import PayoutLog from "../components/admin/PayoutLog";
@@ -79,4 +79,4 @@ export default function AdminDashboard() {
         <TriggerCheck />
     </div>
   );
-}
+}*/

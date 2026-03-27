@@ -1,11 +1,8 @@
-// live trigger check 
-// makes real API calls to the FastAPI backend
-
-import { useState } from 'react'
+import React, { useState } from 'react';
+import './TriggerCheck.css';
 
 export default function TriggerCheck() {
 
-  // stores whatever the admin is typing in the form
   const [form, setForm] = useState({
     type: 'aqi',
     city: '',
@@ -15,49 +12,49 @@ export default function TriggerCheck() {
     baseline_orders: '',
     zone: '',
     platform: '',
-  })
+  });
 
-  // stores the result from the API
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // true while waiting for API response
-  const [loading, setLoading] = useState(false)
-
-  // runs when admin clicks "Run Check"
   const runCheck = async () => {
-    setLoading(true)
-    setResult(null)
+    setLoading(true);
+    setResult(null);
 
     try {
-      // build the URL based on which trigger type is selected
-      let url = ''
+      let url = '';
 
       if (form.type === 'aqi') {
-        url = `http://localhost:8000/api/triggers/aqi?city=${form.city}&current_orders=${form.current_orders}&baseline_orders=${form.baseline_orders}`
+        url = `http://localhost:8000/api/triggers/aqi?city=${form.city}&current_orders=${form.current_orders}&baseline_orders=${form.baseline_orders}`;
       } else if (form.type === 'rain') {
-        url = `http://localhost:8000/api/triggers/rain?lat=${form.lat}&lon=${form.lon}&current_orders=${form.current_orders}&baseline_orders=${form.baseline_orders}`
+        url = `http://localhost:8000/api/triggers/rain?lat=${form.lat}&lon=${form.lon}&current_orders=${form.current_orders}&baseline_orders=${form.baseline_orders}`;
       } else if (form.type === 'heat') {
-        url = `http://localhost:8000/api/triggers/heat?lat=${form.lat}&lon=${form.lon}&current_orders=${form.current_orders}&baseline_orders=${form.baseline_orders}`
+        url = `http://localhost:8000/api/triggers/heat?lat=${form.lat}&lon=${form.lon}&current_orders=${form.current_orders}&baseline_orders=${form.baseline_orders}`;
       } else if (form.type === 'curfew') {
-        url = `http://localhost:8000/api/triggers/curfew?zone=${form.zone}`
+        url = `http://localhost:8000/api/triggers/curfew?zone=${form.zone}`;
       } else if (form.type === 'curfew_simulate') {
-        url = `http://localhost:8000/api/triggers/curfew/simulate?zone=${form.zone}`
+        url = `http://localhost:8000/api/triggers/curfew/simulate?zone=${form.zone}`;
       } else if (form.type === 'outage') {
-        url = `http://localhost:8000/api/triggers/outage?platform=${form.platform}`
+        url = `http://localhost:8000/api/triggers/outage?platform=${form.platform}`;
       } else if (form.type === 'outage_simulate') {
-        url = `http://localhost:8000/api/triggers/outage/simulate?platform=${form.platform}`
+        url = `http://localhost:8000/api/triggers/outage/simulate?platform=${form.platform}`;
       }
 
-      const response = await fetch(url)
-      const data = await response.json()
-      setResult(data)
+      const response = await fetch(url);
+      const data = await response.json();
+      setResult(data);
 
     } catch (err) {
-      setResult({ error: 'Failed to connect to backend — make sure uvicorn is running' })
+      setResult({ error: 'Failed to connect to backend — make sure uvicorn is running' });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false)
-  }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
 
   return (
     <div className="section">
@@ -66,13 +63,13 @@ export default function TriggerCheck() {
 
       <div className="trigger-form">
 
-        {/* trigger type dropdown */}
         <div className="input-group">
           <label className="input-label">Trigger Type</label>
           <select
+            name="type"
             className="trigger-input"
             value={form.type}
-            onChange={e => setForm({ ...form, type: e.target.value })}
+            onChange={handleInputChange}
           >
             <optgroup label="Environmental (Real API)">
               <option value="aqi">🌫️ AQI Check — city name</option>
@@ -90,88 +87,90 @@ export default function TriggerCheck() {
           </select>
         </div>
 
-        {/* city — only for AQI */}
         {form.type === 'aqi' && (
           <div className="input-group">
             <label className="input-label">City Name</label>
             <input
+              name="city"
               className="trigger-input"
               placeholder="e.g. Delhi, Mumbai, Chennai"
               value={form.city}
-              onChange={e => setForm({ ...form, city: e.target.value })}
+              onChange={handleInputChange}
             />
           </div>
         )}
 
-        {/* lat/lon — only for rain and heat */}
         {(form.type === 'rain' || form.type === 'heat') && (
           <>
             <div className="input-group">
               <label className="input-label">Latitude</label>
               <input
+                name="lat"
                 className="trigger-input"
                 placeholder="e.g. 13.0827 (Chennai)"
                 value={form.lat}
-                onChange={e => setForm({ ...form, lat: e.target.value })}
+                onChange={handleInputChange}
               />
             </div>
             <div className="input-group">
               <label className="input-label">Longitude</label>
               <input
+                name="lon"
                 className="trigger-input"
                 placeholder="e.g. 80.2707 (Chennai)"
                 value={form.lon}
-                onChange={e => setForm({ ...form, lon: e.target.value })}
+                onChange={handleInputChange}
               />
             </div>
           </>
         )}
 
-        {/* zone — for curfew */}
         {(form.type === 'curfew' || form.type === 'curfew_simulate') && (
           <div className="input-group">
             <label className="input-label">Zone / City</label>
             <input
+              name="zone"
               className="trigger-input"
               placeholder="e.g. Chennai, Delhi, Mumbai"
               value={form.zone}
-              onChange={e => setForm({ ...form, zone: e.target.value })}
+              onChange={handleInputChange}
             />
           </div>
         )}
 
-        {/* platform — for outage */}
         {(form.type === 'outage' || form.type === 'outage_simulate') && (
           <div className="input-group">
             <label className="input-label">Platform Name</label>
             <input
+              name="platform"
               className="trigger-input"
               placeholder="e.g. Zepto, Blinkit, Swiggy"
               value={form.platform}
-              onChange={e => setForm({ ...form, platform: e.target.value })}
+              onChange={handleInputChange}
             />
           </div>
         )}
 
-        {/* order inputs — only for environmental triggers */}
         {['aqi', 'rain', 'heat'].includes(form.type) && (
           <>
             <div className="input-group">
               <label className="input-label">Current Orders in Zone</label>
               <input
+                name="current_orders"
                 className="trigger-input"
                 placeholder="e.g. 60"
                 value={form.current_orders}
-                onChange={e => setForm({ ...form, current_orders: e.target.value })}
+                onChange={handleInputChange}
               />
             </div>
             <div className="input-group">
               <label className="input-label">Baseline Orders (4-week avg)</label>
               <input
+                name="baseline_orders"
                 className="trigger-input"
                 placeholder="e.g. 100"
                 value={form.baseline_orders}
-                onChange={e => setForm({ ...form, baseline_orders: e.target.value })}
+                onChange={handleInputChange}
               />
             </div>
           </>
@@ -185,7 +184,6 @@ export default function TriggerCheck() {
 
       </div>
 
-      {/* result box */}
       {result && !result.error && (
         <div className={`trigger-result ${result.confirmed ? 'result-triggered' : 'result-clear'}`}>
           <p className="result-status">
@@ -210,5 +208,5 @@ export default function TriggerCheck() {
       )}
 
     </div>
-  )
+  );
 }
