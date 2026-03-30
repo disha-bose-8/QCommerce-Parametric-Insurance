@@ -1,135 +1,124 @@
-import { Shield, Calendar, DollarSign, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Calendar, DollarSign, Users, Info } from 'lucide-react';
 import './CoveragePage.css';
 
 export function CoveragePage() {
-  const weekDates = 'Mar 24 - Mar 30, 2026';
-  const daysRemaining = 3;
-  const totalPremium = 140;
-  const dailyPremium = 20;
-  const workerShare = 10;
-  const platformShare = 10;
+  const [premiumData, setPremiumData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPremium = async () => {
+      try {
+        // Fetching the same real-time data as the Home Page
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/premium/calculate?weekly_income=7000&zone=HSR Layout&rain_intensity=0.8&aqi=350"
+        );
+        const data = await response.json();
+        setPremiumData(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching premium breakdown:", error);
+        setLoading(false);
+      }
+    };
+    fetchPremium();
+  }, []);
+
+  // Map API fields to your UI variables
+  const totalWeekly = premiumData?.total_premium || 0;
+  const workerWeekly = premiumData?.worker_pays || 0;
+  const platformWeekly = premiumData?.platform_pays || 0;
+  const dailyTotal = premiumData?.daily_equivalent || 0;
+  const appliedSplit = premiumData?.applied_split || "60-40";
 
   return (
     <div className="coverage-page">
       <div className="page-header">
-        <div className="header-icon">
-          <Shield size={28} />
-        </div>
+        <div className="header-icon"><Shield size={28} /></div>
         <div>
           <h1>Coverage</h1>
-          <p>Your active insurance plan</p>
+          <p>AI-adjusted active plan</p>
         </div>
       </div>
 
-      <div className="coverage-card main">
-        <div className="coverage-card-header">
-          <div className="coverage-icon active">
-            <Shield size={32} />
-          </div>
-          <div className="coverage-status">
-            <h2>Coverage Active</h2>
-            <p>Full protection enabled</p>
-          </div>
-        </div>
-
-        <div className="coverage-divider"></div>
-
-        <div className="coverage-details">
-          <div className="detail-row">
-            <div className="detail-label">
-              <Calendar size={18} />
-              <span>Coverage Period</span>
+      {loading ? (
+        <div className="loading-shimmer">Calculating split...</div>
+      ) : (
+        <>
+          <div className="coverage-card main">
+            <div className="coverage-card-header">
+              <div className="coverage-icon active"><Shield size={32} /></div>
+              <div className="coverage-status">
+                <h2>Protection Active</h2>
+                <p>Status: High Risk Adjusted</p>
+              </div>
             </div>
-            <div className="detail-value">{weekDates}</div>
-          </div>
-
-          <div className="detail-row">
-            <div className="detail-label">
-              <Calendar size={18} />
-              <span>Days Remaining</span>
+            <div className="coverage-divider"></div>
+            <div className="coverage-details">
+              <div className="detail-row">
+                <span>Period</span>
+                <div className="detail-value">Mar 24 - Mar 31, 2026</div>
+              </div>
+              <div className="detail-row">
+                <span>Current Risk Factor</span>
+                <div className="detail-value highlight">{(premiumData?.risk_factor * 100).toFixed(1)}%</div>
+              </div>
             </div>
-            <div className="detail-value highlight">{daysRemaining} days</div>
           </div>
-        </div>
-      </div>
 
-      <div className="section-header">
-        <h2>Premium Breakdown</h2>
-        <p>Affordable daily micro-premium</p>
-      </div>
-
-      <div className="premium-card daily-premium">
-        <div className="premium-header">
-          <DollarSign size={24} />
-          <span>Daily Premium</span>
-        </div>
-        <div className="premium-amount">₹{dailyPremium}/day</div>
-        <p className="premium-description">
-          Protect your income for just ₹{dailyPremium} per day instead of a weekly lump sum
-        </p>
-      </div>
-
-      <div className="premium-split">
-        <div className="split-card">
-          <div className="split-icon worker">
-            <DollarSign size={20} />
+          <div className="section-header">
+            <h2>Premium Breakdown</h2>
+            <p>Dynamic Split: <strong>{appliedSplit}</strong></p>
           </div>
-          <div className="split-info">
-            <span className="split-label">Your Share</span>
-            <span className="split-amount">₹{workerShare}/day</span>
-            <span className="split-total">₹{workerShare * 7}/week</span>
+
+          <div className="premium-card daily-premium">
+            <div className="premium-header">
+              <DollarSign size={24} />
+              <span>Weekly Total Premium</span>
+            </div>
+            <div className="premium-amount">₹{totalWeekly}</div>
+            <p className="premium-description">
+              Calculated based on your ₹7,000 income and current environmental triggers.
+            </p>
           </div>
-        </div>
 
-        <div className="split-divider">+</div>
+          <div className="premium-split">
+            <div className="split-card">
+              <div className="split-icon worker"><DollarSign size={20} /></div>
+              <div className="split-info">
+                <span className="split-label">Worker Share</span>
+                <span className="split-amount">₹{workerWeekly}</span>
+                <span className="split-total">≈ ₹{Math.round(workerWeekly / 7)}/day</span>
+              </div>
+            </div>
 
-        <div className="split-card">
-          <div className="split-icon platform">
-            <Users size={20} />
+            <div className="split-divider">+</div>
+
+            <div className="split-card">
+              <div className="split-icon platform"><Users size={20} /></div>
+              <div className="split-info">
+                <span className="split-label">Platform Share</span>
+                <span className="split-amount">₹{platformWeekly}</span>
+                <span className="split-total">Auto-deducted</span>
+              </div>
+            </div>
           </div>
-          <div className="split-info">
-            <span className="split-label">Platform Share</span>
-            <span className="split-amount">₹{platformShare}/day</span>
-            <span className="split-total">₹{platformShare * 7}/week</span>
+          
+          <div className="info-box-coverage">
+            <Info size={16} />
+            <p>During High-AQI or Heavy Rain, the platform's contribution increases to reduce worker burden.</p>
           </div>
-        </div>
-      </div>
 
-      <div className="coverage-card total">
-        <div className="total-row">
-          <span className="total-label">Weekly Total</span>
-          <span className="total-amount">₹{totalPremium}</span>
-        </div>
-        <p className="total-description">
-          Split between you and your platform partner
-        </p>
-      </div>
-
-      <div className="coverage-benefits">
-        <h3>What's Covered</h3>
-        <ul className="benefits-list">
-          <li>
-            <Shield size={16} />
-            <span>Heavy rain preventing work (₹200-500/day)</span>
-          </li>
-          <li>
-            <Shield size={16} />
-            <span>Poor air quality AQI &gt; 300 (₹150-350/day)</span>
-          </li>
-          <li>
-            <Shield size={16} />
-            <span>Government curfews (₹500-1000/day)</span>
-          </li>
-          <li>
-            <Shield size={16} />
-            <span>Platform technical outages (₹300-700/day)</span>
-          </li>
-        </ul>
-      </div>
-
-      <button className="btn-renew">
-        Renew Coverage
-      </button>
+          {/* Keep your Benefits list here */}
+          <div className="coverage-benefits">
+            <h3>Automated Payout Thresholds</h3>
+            <ul className="benefits-list">
+              <li><Shield size={16} /> <span>Rain &gt; 0.5 intensity: ₹450 payout</span></li>
+              <li><Shield size={16} /> <span>AQI &gt; 300: ₹250 payout</span></li>
+            </ul>
+          </div>
+        </>
+      )}
     </div>
   );
 }

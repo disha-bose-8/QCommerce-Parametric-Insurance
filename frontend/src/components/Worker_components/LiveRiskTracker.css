@@ -1,0 +1,47 @@
+.risk-tracker-container {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #333;
+  color: white;
+}
+
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.trigger-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.trigger-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #262626;
+  font-size: 0.9rem;
+  border-left: 4px solid transparent;
+}
+
+/* Dynamic Status Colors */
+.status-safe { border-left-color: #00ff88; color: #00ff88; }
+.status-warning { border-left-color: #ffcc00; color: #ffcc00; }
+.status-danger { border-left-color: #ff4d4d; color: #ff4d4d; background: #3d1a1a; }
+
+.risk-alert {
+  margin-top: 1rem;
+  background: rgba(255, 77, 77, 0.1);
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  color: #ff4d4d;
+  font-size: 0.8rem;
+}

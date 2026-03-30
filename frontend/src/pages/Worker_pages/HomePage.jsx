@@ -1,40 +1,54 @@
 import { Shield, TrendingUp, MapPin, Bell } from 'lucide-react';
 import { CircularProgress } from '../../components/Worker_components/CircularProgress';
+import LiveRiskTracker from '../../components/Worker_components/LiveRiskTracker';
+import { useState, useEffect } from 'react';
 import './HomePage.css';
 
+// Keep your mocks as fallback
 const mockTriggers = [
-  { id: 1, type: 'rain', label: 'Heavy Rain', percentage: 85, forecast: 'High risk next 6 hours' },
-  { id: 2, type: 'aqi', label: 'Air Quality', percentage: 25, forecast: 'Good conditions' },
-  { id: 3, type: 'curfew', label: 'Curfew Risk', percentage: 5, forecast: 'Low risk today' },
-  { id: 4, type: 'outage', label: 'Platform', percentage: 15, forecast: 'Stable operations' },
+  { id: 1, label: 'Rainfall', percentage: 0, forecast: 'Syncing...' },
+  { id: 2, label: 'Air Quality', percentage: 0, forecast: 'Syncing...' },
+  { id: 3, label: 'Traffic', percentage: 0, forecast: 'Syncing...' },
+  { id: 4, label: 'UV Index', percentage: 0, forecast: 'Syncing...' },
 ];
 
 const recentAlerts = [
-  {
-    id: 1,
-    type: 'rain',
-    message: 'Heavy rain detected in your zone',
-    time: '2 hours ago',
-    status: 'monitoring',
-  },
-  {
-    id: 2,
-    type: 'platform',
-    message: 'Platform downtime - We\'re monitoring the situation',
-    time: '5 hours ago',
-    status: 'monitoring',
-  },
+  { id: 1, message: 'Heavy rain detected in your zone', time: '2 hours ago' },
+  { id: 2, message: 'Platform downtime monitoring', time: '5 hours ago' },
 ];
 
 export function HomePage() {
+  const [riskData, setRiskData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const fetchRisk = async () => {
+    try {
+      // THE URL MUST MATCH YOUR SWAGGER PARAMETERS EXACTLY
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/premium/calculate?weekly_income=6000&zone=HSR Layout&rain_intensity=0.4&traffic=0.1&aqi=150&uv_index=1"
+      );
+      const data = await response.json();
+      console.log("API RESPONSE:", data); // Check your browser console for this!
+      setRiskData(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching AI risk:", error);
+      setLoading(false);
+    }
+  };
+  fetchRisk();
+}, []);
+
   return (
     <div className="home-page">
+      {/* 1. Header */}
       <div className="home-header">
         <div className="user-info">
           <h1>Welcome, Rajesh</h1>
           <div className="zone-info">
             <MapPin size={16} />
-            <span>South Delhi</span>
+            <span>{riskData ? riskData.zone : "South Delhi"}</span>
           </div>
         </div>
         <button className="notification-btn">
@@ -43,67 +57,79 @@ export function HomePage() {
         </button>
       </div>
 
-      <div className="coverage-status-card">
-        <div className="status-header">
-          <div className="status-icon">
+      {/* 2. Status Cards */}
+      <div className="status-cards-container">
+        <div className="coverage-status-card">
+          <div className="status-header">
             <Shield size={24} />
-          </div>
-          <div>
-            <h3>Coverage Active</h3>
-            <p>Protected until Mar 30, 2026</p>
-          </div>
-        </div>
-        <div className="status-badge active">Active</div>
-      </div>
-
-      <div className="earnings-card">
-        <div className="earnings-header">
-          <TrendingUp size={20} />
-          <span>This Week's Earnings</span>
-        </div>
-        <div className="earnings-amount">₹4,250</div>
-        <div className="earnings-info">
-          <span className="earnings-change positive">+12% from last week</span>
-        </div>
-      </div>
-
-      <div className="section-header">
-        <h2>Today's Risk Levels</h2>
-        <p>Real-time trigger monitoring</p>
-      </div>
-
-      <div className="triggers-grid">
-        {mockTriggers.map((trigger) => (
-          <div key={trigger.id} className="trigger-card">
-            <CircularProgress 
-              percentage={trigger.percentage} 
-              size={100}
-              strokeWidth={8}
-            />
-            <div className="trigger-info">
-              <h4>{trigger.label}</h4>
-              <p>{trigger.forecast}</p>
+            <div>
+              <h3>Coverage Active</h3>
+              <p>Protected until Mar 30, 2026</p>
             </div>
           </div>
-        ))}
+          <div className="status-badge active">Active</div>
+        </div>
+
+        <div className="earnings-card">
+          <div className="earnings-header">
+            <TrendingUp size={20} />
+            <span>This Week's Earnings</span>
+          </div>
+          <div className="earnings-amount">₹4,250</div>
+        </div>
       </div>
 
+      {/* 3. AI Section */}
+      <div className="section-header">
+        <h2>System Intelligence</h2>
+        <p>AI-driven hyper-local risk profiling</p>
+      </div>
+
+      {loading ? (
+        <div className="loading-card">
+          <p>Syncing with Weather Oracle...</p>
+        </div>
+      ) : (
+        <>
+          {riskData && <LiveRiskTracker riskData={riskData} />}
+
+          <div className="section-header">
+            <h2>Environmental Sensors</h2>
+            <p>Real-time trigger monitoring</p>
+          </div>
+
+          <div className="triggers-grid">
+            {(riskData?.triggers_detected ? [
+              { id: 1, label: 'Rainfall', percentage: (riskData.triggers_detected.rain || 0) * 100, forecast: riskData.triggers_detected.rain > 0.6 ? 'High Risk' : 'Stable' },
+              { id: 2, label: 'Air Quality', percentage: ((riskData.triggers_detected.aqi || 0) / 500) * 100, forecast: riskData.triggers_detected.aqi > 200 ? 'Hazardous' : 'Good' },
+              { id: 3, label: 'Traffic', percentage: (riskData.triggers_detected.traffic || 0) * 100, forecast: 'Live congestion' },
+              { id: 4, label: 'UV Index', percentage: ((riskData.triggers_detected.uv || 0) / 15) * 100, forecast: 'Sun intensity' },
+            ] : mockTriggers).map((trigger) => (
+              <div key={trigger.id} className="trigger-card">
+                <CircularProgress percentage={Math.round(trigger.percentage)} size={80} strokeWidth={6} />
+                <div className="trigger-info">
+                  <h4>{trigger.label}</h4>
+                  <p>{trigger.forecast}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 4. Alerts */}
       <div className="section-header">
         <h2>Recent Alerts</h2>
-        <p>Stay updated on active triggers</p>
       </div>
 
       <div className="alerts-list">
         {recentAlerts.map((alert) => (
           <div key={alert.id} className="alert-item">
-            <div className="alert-icon">
-              <Bell size={20} />
-            </div>
+            <Bell size={20} />
             <div className="alert-content">
-              <p className="alert-message">{alert.message}</p>
-              <span className="alert-time">{alert.time}</span>
+              <p>{alert.message}</p>
+              <span>{alert.time}</span>
             </div>
-            <div className="alert-status monitoring">Monitoring</div>
           </div>
         ))}
       </div>

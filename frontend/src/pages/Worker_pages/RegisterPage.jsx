@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, ArrowLeft, Phone, Lock, User, MapPin } from 'lucide-react';
+import { Shield, ArrowLeft, Phone, Lock, User, MapPin, IndianRupee, Bike } from 'lucide-react';
 import './RegisterPage.css';
 
 export function RegisterPage() {
@@ -8,49 +8,58 @@ export function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    zone: '',
-    platform: '',
+    zone: 'HSR Layout',
+    platform: 'Swiggy',
+    income: '7000',
     password: '',
   });
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    // Mock registration - navigate to dashboard
-    navigate('/dashboard');
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    // Clean phone number to only digits
+    const cleanValue = name === 'phone' ? value.replace(/\D/g, '') : value;
+    setFormData(prev => ({ ...prev, [name]: cleanValue }));
   };
 
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+  const handleRegister = (e) => {
+    e.preventDefault();
+    
+    // Save to localStorage for the Dashboard to use in API calls
+    localStorage.setItem("role", "worker");
+    localStorage.setItem("workerName", formData.name);
+    localStorage.setItem("workerZone", formData.zone);
+    localStorage.setItem("workerIncome", formData.income);
+    localStorage.setItem("isLoggedIn", "true");
+
+    alert(`Account Created! Protecting ${formData.name} in ${formData.zone}.`);
+    navigate('/dashboard');
   };
 
   return (
     <div className="register-page">
-      <div className="register-content">
-        <button className="back-button" onClick={() => navigate('/')}>
-          <ArrowLeft size={24} />
+      <div className="register-container">
+        <button className="back-btn" onClick={() => navigate('/login')}>
+          <ArrowLeft size={20} />
         </button>
 
         <div className="register-header">
           <div className="register-logo">
-            <Shield size={48} />
+            <Shield size={42} color="#00ff88" />
           </div>
           <h1>Create Account</h1>
-          <p>Register to start protecting your income</p>
+          <p>Join 5,000+ protected gig workers</p>
         </div>
 
         <form className="register-form" onSubmit={handleRegister}>
+          {/* FULL NAME */}
           <div className="form-group">
-            <label htmlFor="name">Full Name</label>
+            <label>Full Name</label>
             <div className="input-wrapper">
-              <User size={20} className="input-icon" />
+              <User size={18} className="input-icon" />
               <input
-                id="name"
                 name="name"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder="Rajesh Kumar"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -58,15 +67,16 @@ export function RegisterPage() {
             </div>
           </div>
 
+          {/* PHONE NUMBER */}
           <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
+            <label>Phone Number</label>
             <div className="input-wrapper">
-              <Phone size={20} className="input-icon" />
+              <span className="prefix">+91</span>
               <input
-                id="phone"
                 name="phone"
                 type="tel"
-                placeholder="Enter your phone number"
+                placeholder="9876543210"
+                maxLength="10"
                 value={formData.phone}
                 onChange={handleChange}
                 required
@@ -74,53 +84,61 @@ export function RegisterPage() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="platform">Platform</label>
-            <div className="input-wrapper">
-              <MapPin size={20} className="input-icon" />
-              <select
-                id="platform"
-                name="platform"
-                value={formData.platform}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select your platform</option>
-                <option value="uber">Uber</option>
-                <option value="ola">Ola</option>
-                <option value="swiggy">Swiggy</option>
-                <option value="zomato">Zomato</option>
-                <option value="dunzo">Dunzo</option>
-                <option value="porter">Porter</option>
-              </select>
+          <div className="form-row">
+            {/* ZONE */}
+            <div className="form-group">
+              <label>Work Zone</label>
+              <div className="input-wrapper">
+                <MapPin size={18} className="input-icon" />
+                <select name="zone" value={formData.zone} onChange={handleChange}>
+                  <option value="HSR Layout">HSR Layout</option>
+                  <option value="Koramangala">Koramangala</option>
+                  <option value="Whitefield">Whitefield</option>
+                  <option value="Indiranagar">Indiranagar</option>
+                </select>
+              </div>
+            </div>
+
+            {/* PLATFORM */}
+            <div className="form-group">
+              <label>Platform</label>
+              <div className="input-wrapper">
+                <Bike size={18} className="input-icon" />
+                <select name="platform" value={formData.platform} onChange={handleChange}>
+                  <option value="Swiggy">Swiggy</option>
+                  <option value="Zomato">Zomato</option>
+                  <option value="Uber">Uber</option>
+                  <option value="Zepto">Zepto</option>
+                </select>
+              </div>
             </div>
           </div>
 
+          {/* WEEKLY INCOME */}
           <div className="form-group">
-            <label htmlFor="zone">Zone</label>
+            <label>Avg. Weekly Income (₹)</label>
             <div className="input-wrapper">
-              <MapPin size={20} className="input-icon" />
+              <IndianRupee size={18} className="input-icon" color="#00ff88" />
               <input
-                id="zone"
-                name="zone"
-                type="text"
-                placeholder="e.g., South Delhi, Andheri West"
-                value={formData.zone}
+                name="income"
+                type="number"
+                placeholder="7000"
+                value={formData.income}
                 onChange={handleChange}
                 required
               />
             </div>
           </div>
 
+          {/* PASSWORD */}
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label>Security Password</label>
             <div className="input-wrapper">
-              <Lock size={20} className="input-icon" />
+              <Lock size={18} className="input-icon" />
               <input
-                id="password"
                 name="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -129,16 +147,13 @@ export function RegisterPage() {
           </div>
 
           <button type="submit" className="btn-register">
-            Register
+            Secure My Income
           </button>
         </form>
 
-        <div className="register-footer">
-          <p>Already have an account?</p>
-          <button className="link-button" onClick={() => navigate('/login')}>
-            Login here
-          </button>
-        </div>
+        <p className="register-footer">
+          Already protected? <span onClick={() => navigate('/login')}>Login</span>
+        </p>
       </div>
     </div>
   );
