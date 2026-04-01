@@ -23,7 +23,7 @@ async def oracle_polling_loop():
         try:
             print("🚀 Oracle Hub: Polling all live sensors...")
             # This checks everything: Rain, AQI, Strikes, Heat
-            active_triggers = await check_all_sensors(zone="Bengaluru")
+            active_triggers = await check_all_sensors(zone="HSR Layout")
             
             for trigger in active_triggers:
                 # AUTOMATIC SETTLEMENT logic

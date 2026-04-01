@@ -9,9 +9,10 @@ export function CoveragePage() {
   useEffect(() => {
     const fetchPremium = async () => {
       try {
-        // Fetching the same real-time data as the Home Page
+        // ✅ CHANGED: Pointing to your LIVE Render Backend
+        // ✅ CHANGED: Using HSR Layout to match your CSV labels
         const response = await fetch(
-          "http://127.0.0.1:8000/api/premium/calculate?weekly_income=7000&zone=HSR Layout&rain_intensity=0.8&aqi=350"
+          "https://qshield-backend-nf8y.onrender.com/api/premium/calculate?weekly_income=7000&zone=HSR Layout"
         );
         const data = await response.json();
         setPremiumData(data);
@@ -23,6 +24,7 @@ export function CoveragePage() {
     };
     fetchPremium();
   }, []);
+  
 
   // Map API fields to your UI variables
   const totalWeekly = premiumData?.total_premium || 0;

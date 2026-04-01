@@ -22,7 +22,7 @@ export function HomePage() {
     const fetchRisk = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/premium/calculate?weekly_income=${workerIncome}&zone=${workerZone}`
+          `https://qshield-backend-nf8y.onrender.com/api/premium/calculate?weekly_income=${workerIncome}&zone=${workerZone}`
         );
         const data = await response.json();
         setRiskData(data);

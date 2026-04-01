@@ -9,9 +9,9 @@ KEYS = {
     "uptime": os.getenv("UPTIMEROBOT_API_KEY")
 }
 
-async def check_all_sensors(zone="Bengaluru"):
+async def check_all_sensors(zone="HSR Layout"):
     results = []
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         # 1. WEATHER CHECK
         w_url = f"https://api.openweathermap.org/data/2.5/weather?q={zone}&appid={KEYS['weather']}&units=metric"
         w_resp = await client.get(w_url)

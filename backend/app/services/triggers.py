@@ -26,7 +26,7 @@ async def check_rain(lat: float, lon: float) -> dict:
         "units": "metric",
     }
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         response = await client.get(url, params=params, timeout=10)
         data = response.json()
     
@@ -55,7 +55,7 @@ async def check_heat(lat: float, lon: float) -> dict:
         "units": "metric",
     }
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         response = await client.get(url, params=params, timeout=10)
         data = response.json()
     
@@ -133,7 +133,7 @@ async def check_curfew(zone: str) -> dict:
         "pageSize": 5,            # only need a few results
     }
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         response = await client.get(url, params=params, timeout=10)
         data = response.json()
     
@@ -183,7 +183,7 @@ async def check_platform_outage(platform: str) -> dict:
         "log_limit": "5",     # last 5 logs
     }
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         response = await client.post(url, data=data, headers=headers, timeout=10)
         result = response.json()
     

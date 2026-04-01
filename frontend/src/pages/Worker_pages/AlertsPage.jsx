@@ -11,7 +11,7 @@ export function AlertsPage() {
     const fetchAlerts = async () => {
       try {
         const zone = localStorage.getItem('workerZone') || 'Bengaluru';
-        const response = await fetch(`http://127.0.0.1:8000/api/premium/calculate?weekly_income=7000&zone=${zone}`);
+        const response = await fetch(`https://qshield-backend-nf8y.onrender.com/api/premium/calculate?weekly_income=7000&zone=${zone}`);
         const data = await response.json();
         setRiskData(data);
         setLoading(false);

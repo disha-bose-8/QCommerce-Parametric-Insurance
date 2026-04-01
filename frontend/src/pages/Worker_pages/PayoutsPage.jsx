@@ -20,7 +20,7 @@ export function PayoutsPage() {
   const fetchPayoutData = async () => {
     try {
       // Hit your new worker-specific endpoint
-      const response = await fetch(`http://127.0.0.1:8000/api/payout/worker/${workerId}`);
+      const response = await fetch(`https://qshield-backend-nf8y.onrender.com/api/payout/worker/${workerId}`);
       const data = await response.json();
       setHistory(data);
       setLoading(false);
