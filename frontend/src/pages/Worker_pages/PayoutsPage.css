@@ -185,3 +185,14 @@
   color: #6366f1;
   font-weight: 700;
 }
+
+.payout-audit {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 4px 0;
+  border-left: 2px solid #3b82f6;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+}

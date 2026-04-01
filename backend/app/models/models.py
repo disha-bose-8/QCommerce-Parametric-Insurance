@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Date
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, ForeignKey # Added DateTime and ForeignKey
 from app.core.database import Base
-from datetime import date
+from datetime import datetime, date # Added datetime
 
 # Worker Table
 class Worker(Base):
@@ -29,10 +29,16 @@ class Payout(Base):
     __tablename__ = "payouts"
 
     id = Column(Integer, primary_key=True, index=True)
-    worker_id = Column(Integer)
-    date = Column(Date)
+    worker_id = Column(Integer, ForeignKey("workers.id"))
     amount = Column(Float)
-    trigger_type = Column(String)  # rain / heat / AQI / etc
+    trigger_type = Column(String)  # rain / heat / AQI / outage
+    
+    # NEW COLUMNS ADDED HERE
+    audit_trail = Column(String, nullable=True) 
+    status = Column(String, default="settled")
+    
+    # Changed to DateTime so the React app shows "2 mins ago" instead of just the date
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 # ✅ Premium Table (FIXED INDENTATION)

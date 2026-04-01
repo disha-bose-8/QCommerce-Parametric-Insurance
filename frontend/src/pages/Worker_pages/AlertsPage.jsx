@@ -1,142 +1,149 @@
-import React, { useState, useEffect } from 'react'; // Added hooks
-import { AlertTriangle, CloudRain, Wind, AlertCircle, Wifi, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertTriangle, CloudRain, Wind, Activity, Sun, Loader2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { CircularProgress } from '../../components/Worker_components/CircularProgress';
 import './AlertsPage.css';
 
 export function AlertsPage() {
-  // 1. STATE FOR REAL-TIME DATA
   const [riskData, setRiskData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 2. FETCH LIVE DATA
   useEffect(() => {
-    const fetchRisk = async () => {
+    const fetchAlerts = async () => {
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/premium/calculate?weekly_income=6000&zone=HSR Layout&rain_intensity=0.8&traffic=0.7&aqi=350&uv_index=11"
-        );
+        const zone = localStorage.getItem('workerZone') || 'Bengaluru';
+        const response = await fetch(`http://127.0.0.1:8000/api/premium/calculate?weekly_income=7000&zone=${zone}`);
         const data = await response.json();
         setRiskData(data);
         setLoading(false);
-      } catch (error) {
-        console.error("Error fetching live alerts:", error);
-        setLoading(false);
+      } catch (e) {
+        console.error("Alerts Sync Error:", e);
       }
     };
-    fetchRisk();
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 10000);
+    return () => clearInterval(interval);
   }, []);
 
-  // 3. DYNAMIC FORECAST GENERATION
-  const triggers = riskData?.triggers_detected || {};
-  
-  const forecast = [
-    {
-      day: 'Today',
-      date: 'Mar 30',
-      // We map the REAL API values to your UI structure
-      triggers: [
-        { type: 'rain', label: 'Rain', risk: (triggers.rain || 0) * 100, trend: 'up', icon: CloudRain },
-        { type: 'aqi', label: 'AQI', risk: ((triggers.aqi || 0) / 500) * 100, trend: 'stable', icon: Wind },
-        { type: 'traffic', label: 'Traffic', risk: (triggers.traffic || 0) * 100, trend: 'up', icon: AlertCircle },
-        { type: 'uv', label: 'UV Index', risk: ((triggers.uv || 0) / 15) * 100, trend: 'stable', icon: Wifi },
-      ],
-    },
-    // Keep Tomorrow and Day after as static mocks for the demo
-    {
-      day: 'Tomorrow',
-      date: 'Mar 31',
-      triggers: [
-        { type: 'rain', label: 'Rain', risk: 45, trend: 'down', icon: CloudRain },
-        { type: 'aqi', label: 'AQI', risk: 30, trend: 'up', icon: Wind },
-        { type: 'traffic', label: 'Traffic', risk: 15, trend: 'down', icon: AlertCircle },
-        { type: 'uv', label: 'UV Index', risk: 10, trend: 'down', icon: Wifi },
-      ],
-    },
-  ];
+  if (loading) return (
+    <div className="loading-state" style={{color: 'white', textAlign: 'center', marginTop: '20%'}}>
+      <Loader2 className="animate-spin" /> <p>Syncing Sensors...</p>
+    </div>
+  );
 
-  // Logic for severity color (Existing)
-  const getSeverityColor = (severity) => {
-    if (severity === 'high') return '#ef4444';
-    if (severity === 'medium') return '#f97316';
-    return '#22c55e';
-  };
-
-  const getTrendIcon = (trend) => {
-    if (trend === 'up') return <TrendingUp size={14} className="trend-icon up" color="#ff4d4d"/>;
-    if (trend === 'down') return <TrendingDown size={14} className="trend-icon down" color="#00ff88"/>;
-    return <Minus size={14} className="trend-icon stable" />;
-  };
+  const isRainHigh = riskData?.triggers_detected?.rain > 0.6;
+  const isAQIHigh = riskData?.triggers_detected?.aqi > 200;
 
   return (
     <div className="alerts-page">
-      <div className="page-header">
-        <div className="header-icon"><AlertTriangle size={28} /></div>
-        <div>
-          <h1>Alerts</h1>
-          <p>Zone risk forecast & live monitoring</p>
-        </div>
-      </div>
-
-      {/* ACTIVE ALERTS SECTION (Live-Driven) */}
-      <div className="section-header">
-        <h2>Active Alerts</h2>
-        <p>Currently monitoring these triggers</p>
-      </div>
-
+      {/* 1. Active Alerts Section */}
       <div className="active-alerts-list">
-        {triggers.rain > 0.6 && (
-          <div className="active-alert-item" style={{ borderLeft: '4px solid #ef4444' }}>
+        {isRainHigh && (
+          <div className="active-alert-item" style={{ borderColor: '#ef4444' }}>
             <div className="alert-header-row">
               <h3>Heavy Rain Detected</h3>
               <span className="severity-badge high">High</span>
             </div>
-            <p className="alert-message">Precipitation levels at {Math.round(triggers.rain * 100)}%. Payout eligibility monitoring active.</p>
+            <p className="alert-message">
+              Precipitation levels at {Math.round(riskData.triggers_detected.rain * 100)}%. Payout eligibility monitoring active.
+            </p>
+            <div className="alert-footer-row">
+              <span className="alert-time">Live Monitoring</span>
+              <div className="alert-status-badge monitoring">
+                <div className="pulse-dot"></div>
+                <span>Active</span>
+              </div>
+            </div>
           </div>
         )}
-        {triggers.aqi > 250 && (
-          <div className="active-alert-item" style={{ borderLeft: '4px solid #f97316' }}>
+
+        {isAQIHigh && (
+          <div className="active-alert-item" style={{ borderColor: '#f97316' }}>
             <div className="alert-header-row">
               <h3>AQI Warning</h3>
               <span className="severity-badge medium">Medium</span>
             </div>
-            <p className="alert-message">Hazardous air quality ({triggers.aqi}). Health protection coverage initiated.</p>
+            <p className="alert-message">
+              Hazardous air quality ({riskData.triggers_detected.aqi}). Health protection coverage initiated.
+            </p>
+            <div className="alert-footer-row">
+              <span className="alert-time">Live Monitoring</span>
+              <div className="alert-status-badge monitoring">
+                <div className="pulse-dot"></div>
+                <span>Active</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isRainHigh && !isAQIHigh && (
+          <div className="active-alert-item" style={{ borderColor: '#22c55e' }}>
+            <div className="alert-header-row">
+              <h3>All Sensors Stable</h3>
+              <span className="severity-badge low">Safe</span>
+            </div>
+            <p className="alert-message">System monitoring Bengaluru smart-grid. No active disruptions.</p>
           </div>
         )}
       </div>
 
-      <div className="section-header">
-        <h2>3-Day Forecast</h2>
-        <p>Real-time risk prediction</p>
-      </div>
-
+      {/* 2. Forecast Section */}
       <div className="forecast-list">
-        {forecast.map((day, idx) => (
-          <div key={idx} className="forecast-day">
-            <div className="day-header">
-              <h3>{day.day}</h3>
-              <span className="day-date">{day.date}</span>
+        {/* TODAY */}
+        <div className="forecast-day">
+          <div className="day-header">
+            <h3>Today</h3>
+            <span className="day-date">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+          </div>
+          <div className="triggers-grid-forecast">
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><CloudRain size={14} /> <span>Rain</span><TrendingUp size={14} className="trend-icon up" /></div>
+              <CircularProgress percentage={Math.round((riskData?.triggers_detected?.rain || 0) * 100)} size={80} />
             </div>
-            <div className="triggers-grid-forecast">
-              {day.triggers.map((trigger) => {
-                const Icon = trigger.icon;
-                return (
-                  <div key={trigger.label} className="trigger-forecast-card">
-                    <div className="trigger-forecast-header">
-                      <Icon size={20} />
-                      <span>{trigger.label}</span>
-                      {getTrendIcon(trigger.trend)}
-                    </div>
-                    <CircularProgress 
-                      percentage={Math.round(trigger.risk)} 
-                      size={70}
-                      strokeWidth={6}
-                    />
-                  </div>
-                );
-              })}
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><Wind size={14} /> <span>AQI</span><Minus size={14} className="trend-icon stable" /></div>
+              <CircularProgress percentage={Math.round(((riskData?.triggers_detected?.aqi || 0) / 500) * 100)} size={80} />
+            </div>
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><Activity size={14} /> <span>Traffic</span><TrendingDown size={14} className="trend-icon down" /></div>
+              <CircularProgress percentage={Math.round((riskData?.triggers_detected?.traffic || 0) * 100)} size={80} />
+            </div>
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><Sun size={14} /> <span>UV Index</span><Minus size={14} className="trend-icon stable" /></div>
+              <CircularProgress percentage={Math.round(((riskData?.triggers_detected?.uv_index || 0) / 11) * 100)} size={80} />
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* TOMORROW - PREDICTIVE SECTION */}
+        <div className="forecast-day">
+          <div className="day-header">
+            <h3>Tomorrow</h3>
+            <span className="day-date">Apr 02</span>
+          </div>
+          <div className="triggers-grid-forecast" style={{ opacity: 0.7 }}>
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><CloudRain size={14} /> <span>Rain</span><TrendingDown size={14} className="trend-icon down" /></div>
+              <CircularProgress percentage={15} size={70} />
+            </div>
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><Wind size={14} /> <span>AQI</span><TrendingUp size={14} className="trend-icon up" /></div>
+              <CircularProgress percentage={45} size={70} />
+            </div>
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><Activity size={14} /> <span>Traffic</span><Minus size={14} className="trend-icon stable" /></div>
+              <CircularProgress percentage={20} size={70} />
+            </div>
+            <div className="trigger-forecast-card">
+              <div className="trigger-forecast-header"><Sun size={14} /> <span>UV Index</span><TrendingDown size={14} className="trend-icon down" /></div>
+              <CircularProgress percentage={10} size={70} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="info-card-alerts">
+        <h3>Parametric Shield</h3>
+        <p>Our AI Oracle monitors real-time sensors. If triggers exceed threshold, settlements are processed automatically.</p>
       </div>
     </div>
   );
