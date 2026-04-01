@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, CloudRain, Wind, Activity, Sun, Loader2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { AlertTriangle, CloudRain, Wind, Activity, Sun, Loader2, TrendingUp, TrendingDown, Minus, Globe, Shield, Bell } from 'lucide-react';
 import { CircularProgress } from '../../components/Worker_components/CircularProgress';
 import './AlertsPage.css';
 
@@ -35,6 +35,7 @@ export function AlertsPage() {
 
   return (
     <div className="alerts-page">
+
       {/* 1. Active Alerts Section */}
       <div className="active-alerts-list">
         {isRainHigh && (
@@ -85,6 +86,50 @@ export function AlertsPage() {
           </div>
         )}
       </div>
+
+      
+      {/* --- Operational Status Section --- */}
+<div className="alerts-status-section">
+  <div className="section-header-mini">
+    <Activity size={18} />
+    <span>Live Sensor Audit</span>
+  </div>
+
+  <div className="operational-status-bars">
+    {/* Platform Bar */}
+    <div className={`status-bar-row ${!riskData?.triggers_detected?.platform_up ? 'alert-pulse-red' : ''}`}>
+      <div className="bar-label-group">
+        <Globe size={18} />
+        <span>Platform Connection</span>
+      </div>
+      <span className={riskData?.triggers_detected?.platform_up ? "text-green" : "text-red"}>
+        {riskData?.triggers_detected?.platform_up ? "STABLE" : "OFFLINE"}
+      </span>
+    </div>
+
+    {/* UV Bar */}
+    <div className={`status-bar-row ${riskData?.triggers_detected?.uv_index > 7 ? 'alert-pulse-red' : ''}`}>
+      <div className="bar-label-group">
+        <Sun size={18} />
+        <span>UV Radiation</span>
+      </div>
+      <span className={riskData?.triggers_detected?.uv_index > 7 ? "text-red" : "text-green"}>
+        Index: {riskData?.triggers_detected?.uv_index || 0}
+      </span>
+    </div>
+
+    {/* Curfew Bar */}
+    <div className={`status-bar-row ${riskData?.triggers_detected?.strike_active ? 'alert-pulse-red' : ''}`}>
+      <div className="bar-label-group">
+        <AlertTriangle size={18} />
+        <span>Zone Restrictions</span>
+      </div>
+      <span className={riskData?.triggers_detected?.strike_active ? "text-red" : "text-green"}>
+        {riskData?.triggers_detected?.strike_active ? "CURFEW ACTIVE" : "NONE"}
+      </span>
+    </div>
+  </div>
+</div>
 
       {/* 2. Forecast Section */}
       <div className="forecast-list">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, TrendingUp, MapPin, Bell, Loader2 } from 'lucide-react';
+import { Shield, TrendingUp, MapPin, Bell, Loader2, Globe, Sun, Activity } from 'lucide-react';
 import { CircularProgress } from '../../components/Worker_components/CircularProgress';
 import LiveRiskTracker from '../../components/Worker_components/LiveRiskTracker';
 import './HomePage.css';
@@ -57,6 +57,8 @@ export function HomePage() {
         </button>
       </div>
 
+      
+
       {/* 2. Status Cards (RESTORED) */}
       <div className="status-cards-container">
         <div className={`coverage-status-card ${riskData?.risk_factor > 0.7 ? 'danger-pulse' : ''}`}>
@@ -80,6 +82,42 @@ export function HomePage() {
           <div className="earnings-amount">₹{riskData?.total_premium?.toFixed(0) || '0'}</div>
         </div>
       </div>
+
+      {/* --- Operational Status Bars --- */}
+<div className="operational-status-bars">
+  {/* Platform Bar */}
+  <div className="status-bar-row">
+    <div className="bar-label-group">
+      <Globe size={18} className={riskData?.triggers_detected?.platform_up ? "text-green" : "text-red"} />
+      <span>Platform Status</span>
+    </div>
+    <span className={`bar-value ${riskData?.triggers_detected?.platform_up ? "text-green" : "text-red"}`}>
+      {riskData?.triggers_detected?.platform_up ? "ONLINE" : "OUTAGE"}
+    </span>
+  </div>
+
+  {/* UV Bar */}
+  <div className="status-bar-row">
+    <div className="bar-label-group">
+      <Sun size={18} className={riskData?.triggers_detected?.uv_index > 7 ? "text-red" : "text-green"} />
+      <span>UV Exposure</span>
+    </div>
+    <span className={`bar-value ${riskData?.triggers_detected?.uv_index > 7 ? "text-red" : "text-green"}`}>
+      Index: {riskData?.triggers_detected?.uv_index || 0}
+    </span>
+  </div>
+
+  {/* Curfew Bar */}
+  <div className="status-bar-row">
+    <div className="bar-label-group">
+      <Activity size={18} className={riskData?.triggers_detected?.strike_active ? "text-red" : "text-green"} />
+      <span>City Restrictions</span>
+    </div>
+    <span className={`bar-value ${riskData?.triggers_detected?.strike_active ? "text-red" : "text-green"}`}>
+      {riskData?.triggers_detected?.strike_active ? "CURFEW ACTIVE" : "STABLE"}
+    </span>
+  </div>
+</div>
 
       {/* 3. AI Section */}
       <div className="section-header">

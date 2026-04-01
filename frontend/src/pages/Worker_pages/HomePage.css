@@ -11,6 +11,40 @@
   margin-bottom: 1.5rem;
 }
 
+.platform-status-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-indicator {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.bg-green { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e; }
+.bg-red { background: #ef444422; color: #ef4444; border: 1px solid #ef4444; }
+
+.strike-banner {
+  background: #7f1d1d;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
 .user-info h1 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -276,3 +310,41 @@
   background: rgba(249, 115, 22, 0.2);
   color: #f97316;
 }
+
+/* Container for the bars below Projected Payout */
+.operational-status-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1rem; /* Pulls it right under the payout card */
+  margin-bottom: 2rem;
+}
+
+/* Individual Row Styling */
+.status-bar-row {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bar-label-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.bar-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Utility Colors */
+.text-green { color: #22c55e; }
+.text-red { color: #ef4444; }
