@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // CHANGE THIS TO YOUR RENDER URL ONCE DEPLOYED
-const API_BASE_URL = "http://localhost:8000/api"; 
+const API_BASE_URL = "https://qshield-backend-nf8y.onrender.com"; 
 
 export const fetchWorkerPayouts = async (workerId) => {
   const response = await axios.get(`${API_BASE_URL}/payout/worker/${workerId}`);
