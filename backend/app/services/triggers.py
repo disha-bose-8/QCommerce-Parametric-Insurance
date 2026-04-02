@@ -44,28 +44,41 @@ async def check_rain(lat: float, lon: float) -> dict:
     }
 
 
-# checks temperature using OpenWeatherMap
 async def check_heat(lat: float, lon: float) -> dict:
     
-    url = "https://api.openweathermap.org/data/2.5/weather"
-    params = {
+    weather_url = "https://api.openweathermap.org/data/2.5/weather"
+    uv_url = "https://api.openweathermap.org/data/2.5/uvi"
+
+    params_weather = {
         "lat": lat,
         "lon": lon,
         "appid": settings.OPENWEATHER_API_KEY,
         "units": "metric",
     }
-    
+
+    params_uv = {
+        "lat": lat,
+        "lon": lon,
+        "appid": settings.OPENWEATHER_API_KEY,
+    }
+
     async with httpx.AsyncClient(verify=False) as client:
-        response = await client.get(url, params=params, timeout=10)
-        data = response.json()
-    
-    temp = data["main"]["temp"]
-    triggered = temp >= HEAT_THRESHOLD
-    
+        weather_res = await client.get(weather_url, params=params_weather, timeout=10)
+        weather_data = weather_res.json()
+
+        uv_res = await client.get(uv_url, params=params_uv, timeout=10)
+        uv_data = uv_res.json()
+
+    temp = weather_data["main"]["temp"]
+    uv = uv_data.get("value", 0)  # fallback safe
+
+    triggered = temp >= HEAT_THRESHOLD or (temp >= 40 and uv >= 8)
+
     return {
         "trigger_type": "extreme_heat",
         "triggered": triggered,
         "raw_value": temp,
+        "uv_index": uv,   # ✅ ADD THIS
         "threshold": HEAT_THRESHOLD,
         "unit": "celsius",
         "source": "openweathermap",

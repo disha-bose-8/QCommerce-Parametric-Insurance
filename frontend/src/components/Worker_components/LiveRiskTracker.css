@@ -45,3 +45,10 @@
   color: #ff4d4d;
   font-size: 0.8rem;
 }
+
+.trigger-tag {
+  font-size: 0.6rem;
+  color: #818cf8;
+  font-weight: 600;
+  margin-top: 2px;
+}

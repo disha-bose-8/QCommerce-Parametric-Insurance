@@ -348,3 +348,30 @@
 /* Utility Colors */
 .text-green { color: #22c55e; }
 .text-red { color: #ef4444; }
+
+.payout-badge {
+  font-size: 0.65rem;
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.trigger-sublabel {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin: 0 0 2px 0;
+}
+
+.display-only-badge {
+  font-size: 0.65rem;
+  background: rgba(100, 116, 139, 0.2);
+  color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}

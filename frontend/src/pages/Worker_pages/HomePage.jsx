@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, TrendingUp, MapPin, Bell, Loader2, Globe, Sun, Activity } from 'lucide-react';
+import { Shield, TrendingUp, MapPin, Bell, Loader2, Globe, Sun, Activity, CloudRain, Wind, Thermometer } from 'lucide-react';
 import { CircularProgress } from '../../components/Worker_components/CircularProgress';
 import LiveRiskTracker from '../../components/Worker_components/LiveRiskTracker';
 import './HomePage.css';
@@ -11,38 +11,74 @@ const recentAlerts = [
 
 export function HomePage() {
   const [riskData, setRiskData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  // Dynamic user data from localStorage
-  const workerName = localStorage.getItem('workerName') || 'Rajesh';
-  const workerZone = localStorage.getItem('workerZone') || 'Bengaluru';
-  const workerIncome = localStorage.getItem('workerIncome') || 7000;
+const [triggerData, setTriggerData] = useState({
+  rain: null,
+  heat: null,
+  aqi: null,
+  curfew: null,
+  outage: null,
+});
+const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchRisk = async () => {
-      try {
-        const response = await fetch(
-          `https://qshield-backend-nf8y.onrender.com/api/premium/calculate?weekly_income=${workerIncome}&zone=${workerZone}`
-        );
-        const data = await response.json();
-        setRiskData(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Oracle Sync Error:", error);
-        setLoading(false);
-      }
-    };
+const workerName = localStorage.getItem('workerName') || 'Rajesh';
+const workerZone = localStorage.getItem('workerZone') || 'Bengaluru';
+const workerIncome = localStorage.getItem('workerIncome') || 7000;
 
-    fetchRisk();
-    const interval = setInterval(fetchRisk, 5000); 
-    return () => clearInterval(interval);
-  }, [workerIncome, workerZone]);
+// Bengaluru coordinates
+const LAT = 12.9716;
+const LON = 77.5946;
+const BASELINE_ORDERS = 100;
+const CURRENT_ORDERS = 60;
+
+useEffect(() => {
+  const fetchAllData = async () => {
+    try {
+      const BASE = 'https://qshield-backend-nf8y.onrender.com';
+
+      // fetch premium
+      const premiumRes = await fetch(
+        `${BASE}/api/premium/calculate?weekly_income=${workerIncome}`
+      );
+      const premium = await premiumRes.json();
+      setRiskData(premium);
+
+      // fetch all triggers in parallel
+      const [rainRes, heatRes, aqiRes, curfewRes, outageRes] = await Promise.all([
+        fetch(`${BASE}/api/triggers/rain?lat=${LAT}&lon=${LON}&current_orders=${CURRENT_ORDERS}&baseline_orders=${BASELINE_ORDERS}`),
+        fetch(`${BASE}/api/triggers/heat?lat=${LAT}&lon=${LON}&current_orders=${CURRENT_ORDERS}&baseline_orders=${BASELINE_ORDERS}`),
+        fetch(`${BASE}/api/triggers/aqi?city=${workerZone}&current_orders=${CURRENT_ORDERS}&baseline_orders=${BASELINE_ORDERS}`),
+        fetch(`${BASE}/api/triggers/curfew?zone=${workerZone}`),
+        fetch(`${BASE}/api/triggers/outage?platform=Zepto`),
+      ]);
+
+      const [rain, heat, aqi, curfew, outage] = await Promise.all([
+        rainRes.json(),
+        heatRes.json(),
+        aqiRes.json(),
+        curfewRes.json(),
+        outageRes.json(),
+      ]);
+
+      setTriggerData({ rain, heat, aqi, curfew, outage });
+      setLoading(false);
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setLoading(false);
+    }
+  };
+
+  fetchAllData();
+  const interval = setInterval(fetchAllData, 30000); // refresh every 30s
+  return () => clearInterval(interval);
+}, [workerIncome, workerZone]);
 
   const getRiskLevel = (val, threshold) => val > threshold ? 'Hazardous' : 'Stable';
 
   return (
     <div className="home-page">
-      {/* 1. Header */}
+
+      {/* HEADER */}
       <div className="home-header">
         <div className="user-info">
           <h1>Welcome, {workerName}</h1>
@@ -57,9 +93,7 @@ export function HomePage() {
         </button>
       </div>
 
-      
-
-      {/* 2. Status Cards (RESTORED) */}
+      {/* COVERAGE CARD */}
       <div className="status-cards-container">
         <div className={`coverage-status-card ${riskData?.risk_factor > 0.7 ? 'danger-pulse' : ''}`}>
           <div className="status-header">
@@ -79,94 +113,135 @@ export function HomePage() {
             <TrendingUp size={20} />
             <span>Projected Payout</span>
           </div>
-          <div className="earnings-amount">₹{riskData?.total_premium?.toFixed(0) || '0'}</div>
+          <div className="earnings-amount">
+            ₹{triggerData.rain?.confirmed || triggerData.aqi?.confirmed || triggerData.heat?.confirmed || triggerData.outage?.confirmed || triggerData.curfew?.confirmed
+    ? Math.round((workerIncome / 7) * 0.5)
+    : riskData?.worker_pays?.toFixed(0) || '210'}
+          </div>
         </div>
       </div>
 
-      {/* --- Operational Status Bars --- */}
-<div className="operational-status-bars">
-  {/* Platform Bar */}
-  <div className="status-bar-row">
-    <div className="bar-label-group">
-      <Globe size={18} className={riskData?.triggers_detected?.platform_up ? "text-green" : "text-red"} />
-      <span>Platform Status</span>
-    </div>
-    <span className={`bar-value ${riskData?.triggers_detected?.platform_up ? "text-green" : "text-red"}`}>
-      {riskData?.triggers_detected?.platform_up ? "ONLINE" : "OUTAGE"}
-    </span>
-  </div>
+      {/* BINARY STATUS BARS — platform, curfew only */}
+      <div className="section-header">
+        <h2>Operational Status</h2>
+        <p>Binary triggers — payout eligible</p>
+      </div>
 
-  {/* UV Bar */}
-  <div className="status-bar-row">
-    <div className="bar-label-group">
-      <Sun size={18} className={riskData?.triggers_detected?.uv_index > 7 ? "text-red" : "text-green"} />
-      <span>UV Exposure</span>
-    </div>
-    <span className={`bar-value ${riskData?.triggers_detected?.uv_index > 7 ? "text-red" : "text-green"}`}>
-      Index: {riskData?.triggers_detected?.uv_index || 0}
-    </span>
+      <div className="operational-status-bars">
+        {/* Platform Bar */}
+<div className="status-bar-row">
+  <div className="bar-label-group">
+    <Globe size={18} />
+    <span>Platform Status</span>
   </div>
-
-  {/* Curfew Bar */}
-  <div className="status-bar-row">
-    <div className="bar-label-group">
-      <Activity size={18} className={riskData?.triggers_detected?.strike_active ? "text-red" : "text-green"} />
-      <span>City Restrictions</span>
-    </div>
-    <span className={`bar-value ${riskData?.triggers_detected?.strike_active ? "text-red" : "text-green"}`}>
-      {riskData?.triggers_detected?.strike_active ? "CURFEW ACTIVE" : "STABLE"}
-    </span>
-  </div>
+  <span className={triggerData.outage?.confirmed ? "text-red" : "text-green"}>
+    {triggerData.outage?.confirmed ? "OUTAGE" : "ONLINE"}
+  </span>
 </div>
 
-      {/* 3. AI Section */}
-      <div className="section-header">
+{/* Curfew Bar */}
+<div className="status-bar-row">
+  <div className="bar-label-group">
+    <Activity size={18} />
+    <span>City Restrictions</span>
+  </div>
+  <span className={triggerData.curfew?.confirmed ? "text-red" : "text-green"}>
+    {triggerData.curfew?.confirmed ? "CURFEW ACTIVE" : "STABLE"}
+  </span>
+</div>
+
+
+        {/* UV — display only, not a payout trigger */}
+        <div className="status-bar-row">
+          <div className="bar-label-group">
+            <Sun size={18} />
+            <span>UV Exposure</span>
+            <span className="display-only-badge">Display Only</span>
+          </div>
+          <span className={`bar-value ${riskData?.triggers_detected?.uv_index > 7 ? "text-red" : "text-green"}`}>
+            Index: {riskData?.triggers_detected?.uv_index || 0}
+          </span>
+        </div>
+      </div>
+
+      {/* AI SECTION */}
+      <div className="section-header" style={{ marginTop: '2rem' }}>
         <h2>System Intelligence</h2>
         <p>Real-time Parametric Monitoring</p>
       </div>
 
       {loading ? (
-        <div className="loading-card" style={{textAlign: 'center', padding: '2rem'}}>
-          <Loader2 className="animate-spin" style={{margin: '0 auto'}} />
+        <div className="loading-card" style={{ textAlign: 'center', padding: '2rem' }}>
+          <Loader2 className="animate-spin" style={{ margin: '0 auto' }} />
           <p>Connecting to Multi-Sensor Oracle...</p>
         </div>
       ) : (
         <>
-          {riskData && <LiveRiskTracker riskData={riskData} />}
+          <LiveRiskTracker triggerData={triggerData} />
 
+          {/* ENVIRONMENTAL SENSOR CIRCLES — 4 payout triggers */}
           <div className="section-header">
             <h2>Environmental Sensors</h2>
-            <p>Live data from Bengaluru Smart-Grid</p>
+            <p>Live data — payout triggers</p>
           </div>
 
           <div className="triggers-grid">
             {[
-              { id: 1, label: 'Rainfall', percentage: (riskData?.triggers_detected?.rain || 0) * 100, val: riskData?.triggers_detected?.rain, thresh: 0.6 },
-              { id: 2, label: 'Air Quality', percentage: ((riskData?.triggers_detected?.aqi || 0) / 500) * 100, val: riskData?.triggers_detected?.aqi, thresh: 200 },
-              { id: 3, label: 'Traffic', percentage: (riskData?.triggers_detected?.traffic || 0) * 100, val: riskData?.triggers_detected?.traffic, thresh: 0.7 },
-              { id: 4, label: 'UV Index', percentage: ((riskData?.triggers_detected?.uv_index || 0) / 11) * 100, val: riskData?.triggers_detected?.uv_index, thresh: 7 },
-            ].map((trigger) => {
-              const forecast = getRiskLevel(trigger.val, trigger.thresh);
-              return (
-                <div key={trigger.id} className={`trigger-card ${forecast === 'Hazardous' ? 'danger-pulse' : ''}`}>
-                  <CircularProgress 
-                    percentage={Math.round(trigger.percentage)} 
-                    size={80} 
-                    strokeWidth={6} 
-                  />
-                  <div className="trigger-info">
-                    <h4>{trigger.label}</h4>
-                    <p className={forecast === 'Hazardous' ? 'text-red-500' : ''}>{forecast}</p>
-                  </div>
-                </div>
-              );
-            })}
+  {
+    id: 1,
+    label: 'Rainfall',
+    sublabel: `${triggerData.rain?.raw_value || 0} mm/hr`,
+    percentage: Math.min(Math.round(((triggerData.rain?.raw_value || 0) / 20) * 100), 100),
+    triggered: triggerData.rain?.confirmed,
+    isPayout: true
+  },
+  {
+    id: 2,
+    label: 'Air Quality',
+    sublabel: `AQI: ${triggerData.aqi?.raw_value || 0}`,
+    percentage: Math.min(Math.round(((triggerData.aqi?.raw_value || 0) / 350) * 100), 100),
+    triggered: triggerData.aqi?.confirmed,
+    isPayout: true
+  },
+  {
+    id: 3,
+    label: 'Heat + UV',
+    sublabel: `${triggerData.heat?.raw_value || 0}°C`,
+    percentage: Math.min(Math.round(((triggerData.heat?.raw_value || 0) / 42) * 100), 100),
+    triggered: triggerData.heat?.confirmed,
+    isPayout: true
+  },
+  {
+    id: 4,
+    label: 'Platform',
+    sublabel: triggerData.outage?.status || 'checking...',
+    percentage: triggerData.outage?.confirmed ? 100 : 0,
+    triggered: triggerData.outage?.confirmed,
+    isPayout: true
+  },
+].map((trigger) => (
+  <div key={trigger.id} className={`trigger-card ${trigger.triggered ? 'danger-pulse' : ''}`}>
+    <span className="payout-badge">💰 Covered</span>
+    <CircularProgress
+      percentage={trigger.percentage}
+      size={80}
+      strokeWidth={6}
+    />
+    <div className="trigger-info">
+      <h4>{trigger.label}</h4>
+      <p className="trigger-sublabel">{trigger.sublabel}</p>
+      <p style={{ color: trigger.triggered ? '#ef4444' : '#22c55e' }}>
+        {trigger.triggered ? 'Triggered' : 'Stable'}
+      </p>
+    </div>
+  </div>
+))}
           </div>
         </>
       )}
 
-      {/* 4. Recent Alerts */}
-      <div className="section-header" style={{marginTop: '2rem'}}>
+      {/* RECENT ALERTS */}
+      <div className="section-header" style={{ marginTop: '2rem' }}>
         <h2>Recent Alerts</h2>
       </div>
 
@@ -181,6 +256,7 @@ export function HomePage() {
           </div>
         ))}
       </div>
+
     </div>
   );
 }

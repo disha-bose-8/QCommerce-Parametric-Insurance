@@ -34,10 +34,13 @@ async def trigger_rain(lat: float, lon: float, current_orders: int, baseline_ord
 @router.get("/heat")
 async def trigger_heat(lat: float, lon: float, current_orders: int, baseline_orders: float):
     
-    result = await check_heat(lat, lon)
-    result = dual_validate(result, current_orders, baseline_orders)
-    
-    return result
+    raw_result = await check_heat(lat, lon)
+    validated = dual_validate(raw_result, current_orders, baseline_orders)
+
+    # 🔥 PRESERVE UV
+    validated["uv_index"] = raw_result.get("uv_index", 0)
+
+    return validated
 
 
 # checks AQI for a city
