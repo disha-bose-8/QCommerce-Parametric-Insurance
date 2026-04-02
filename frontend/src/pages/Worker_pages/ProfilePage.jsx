@@ -40,7 +40,7 @@ export function ProfilePage() {
           </div>
           <div className="info-content">
             <span className="info-label">Full Name</span>
-            <span className="info-value">Rajesh Kumar</span>
+            <span className="info-value">Anwpras Rosha</span>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export function ProfilePage() {
           </div>
           <div className="info-content">
             <span className="info-label">Platform</span>
-            <span className="info-value">Uber</span>
+            <span className="info-value">Blinkit</span>
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export function ProfilePage() {
           </div>
           <div className="info-content">
             <span className="info-label">Zone</span>
-            <span className="info-value">South Delhi</span>
+            <span className="info-value">Kormangala</span>
           </div>
         </div>
       </div>

@@ -106,8 +106,7 @@ export function RegisterPage() {
                 <Bike size={18} className="input-icon" />
                 <select name="platform" value={formData.platform} onChange={handleChange}>
                   <option value="Swiggy">Swiggy</option>
-                  <option value="Zomato">Zomato</option>
-                  <option value="Uber">Uber</option>
+                  <option value="Blinkit">Blinkit</option>
                   <option value="Zepto">Zepto</option>
                 </select>
               </div>
