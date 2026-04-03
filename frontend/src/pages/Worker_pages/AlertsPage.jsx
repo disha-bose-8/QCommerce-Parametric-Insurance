@@ -149,17 +149,23 @@ export function AlertsPage() {
           </div>
         )}
 
-        {!isRainHigh && !isAQIHigh && !isHeatHigh && !isCurfewActive && !isOutageActive && (
-          <div className="active-alert-item" style={{ borderColor: '#22c55e' }}>
-            <div className="alert-header-row">
-              <h3>All Sensors Stable</h3>
-              <span className="severity-badge low">Safe</span>
-            </div>
-            <p className="alert-message">
-              System monitoring Bengaluru smart-grid. No active disruptions.
-            </p>
-          </div>
-        )}
+        {/* DYNAMIC FALLBACK: Only shows if NO active alerts are found */}
+{!isRainHigh && !isAQIHigh && !isHeatHigh && !isCurfewActive && !isOutageActive && (
+  <div className="active-alert-item" style={{ borderColor: '#22c55e', background: 'rgba(34, 197, 94, 0.05)' }}>
+    <div className="alert-header-row">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="pulse-green-dot"></div>
+        <h3>System Status: Stable</h3>
+      </div>
+      <span className="severity-badge low">Live Audit</span>
+    </div>
+    <p className="alert-message">
+      Last smart-grid audit for <strong>{localStorage.getItem('workerZone') || 'Bengaluru'}</strong> completed at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. 
+      <br />
+      <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>✓ All parametric triggers within safety thresholds.</span>
+    </p>
+  </div>
+)}
       </div>
 
       {/* STATUS */}

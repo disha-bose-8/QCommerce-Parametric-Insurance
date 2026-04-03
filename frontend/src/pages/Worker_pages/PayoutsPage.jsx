@@ -14,7 +14,7 @@ const getTriggerColor = (type) => {
 export function PayoutsPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const workerId = localStorage.getItem('workerId') || 160; // Your PES ID suffix works well here
+  const workerId = localStorage.getItem('workerId');
 
   // 1. FETCH ACTUAL DATA FROM SUPABASE
   const fetchPayoutData = async () => {

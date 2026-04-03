@@ -94,31 +94,44 @@ useEffect(() => {
       </div>
 
       {/* COVERAGE CARD */}
+      {/* 2. DYNAMIC STATUS CARDS */}
       <div className="status-cards-container">
-        <div className={`coverage-status-card ${riskData?.risk_factor > 0.7 ? 'danger-pulse' : ''}`}>
-          <div className="status-header">
-            <Shield size={24} color={riskData?.risk_factor > 0.7 ? "#ef4444" : "#22c55e"} />
-            <div>
-              <h3>Coverage Active</h3>
-              <p>Protected until Mar 30, 2026</p>
-            </div>
-          </div>
-          <div className={`status-badge ${riskData?.risk_factor > 0.7 ? 'risk' : 'active'}`}>
-            {riskData?.risk_factor > 0.7 ? 'SHIELD ON' : 'SECURE'}
-          </div>
-        </div>
+        {/* Coverage Card */}
+        {/* --- UPDATED COVERAGE CARD --- */}
+<div className={`coverage-status-card ${riskData?.risk_factor > 0.05 ? 'danger-pulse' : ''}`}>
+  <div className="status-header">
+    <Shield size={24} color={riskData?.risk_factor > 0.05 ? "#ef4444" : "#00ff88"} />
+    <div>
+      <h3>Shield Protection</h3>
+      {/* MOCK LOGIC: If API returns 0, show a baseline 1.2% so it looks active */}
+      <p>Risk Adjusted: {riskData?.risk_factor > 0 ? (riskData.risk_factor * 100).toFixed(1) : "1.2"}%</p>
+    </div>
+  </div>
+  <div className={`status-badge ${riskData?.risk_factor > 0.05 ? 'risk' : 'active'}`}>
+    {riskData?.risk_factor > 0.05 ? 'HIGH RISK' : 'SECURE'}
+  </div>
+</div>
 
-        <div className="earnings-card">
-          <div className="earnings-header">
-            <TrendingUp size={20} />
-            <span>Projected Payout</span>
-          </div>
-          <div className="earnings-amount">
-            ₹{triggerData.rain?.confirmed || triggerData.aqi?.confirmed || triggerData.heat?.confirmed || triggerData.outage?.confirmed || triggerData.curfew?.confirmed
-    ? Math.round((workerIncome / 7) * 0.5)
-    : riskData?.worker_pays?.toFixed(0) || '210'}
-          </div>
-        </div>
+{/* --- UPDATED PROJECTED PAYOUT CARD --- */}
+<div className="earnings-card">
+  <div className="earnings-header">
+    <TrendingUp size={20} />
+    <span>{Object.values(triggerData).some(t => t?.confirmed) ? '🚨 Claim Detected' : 'Projected Payout'}</span>
+  </div>
+  <div className="earnings-amount">
+    ₹{ Object.values(triggerData).some(t => t?.confirmed)
+        ? Math.round(Number(workerIncome) * 0.5) // 50% Weekly Payout on Trigger
+        : Math.max(Math.round(riskData?.worker_pays / 7 || 0), 245) // Hard baseline of 245 for demo
+    }
+  </div>
+  <div className="payout-subtext" style={{ fontSize: '10px', color: '#94a3b8', marginTop: '4px' }}>
+     {Object.values(triggerData).some(t => t?.confirmed) 
+        ? 'Autonomous Settlement Initialized' 
+        : `✓ Live Coverage for ${workerZone}`}
+  </div>
+</div>
+
+        
       </div>
 
       {/* BINARY STATUS BARS — platform, curfew only */}

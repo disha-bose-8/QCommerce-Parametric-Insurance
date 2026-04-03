@@ -17,11 +17,16 @@ const [showPassword, setShowPassword] = useState(false);
 
 const handleLogin = async (e) => {
   e.preventDefault();
-
-  // Clean the phone number (remove spaces/dashes if any)
   const cleanPhone = phoneNumber.trim();
 
-  // 👉 Check user in database
+   // ADMIN LOGIN 
+  if (cleanPhone === "0000000000" && password === "admin123") {
+    localStorage.setItem("role", "admin");
+    localStorage.setItem("isLoggedIn", "true");
+    navigate("/admin"); // make sure route exists
+    return;
+  }
+
   const { data, error } = await supabase
     .from("workers")
     .select("*")
@@ -34,16 +39,18 @@ const handleLogin = async (e) => {
     return;
   }
 
-  if (data.length > 0) {
+  if (data && data.length > 0) {
     const user = data[0];
 
+    // ✅ CAPTURE THE ID FROM THE DATABASE
+    localStorage.setItem("workerId", user.id); 
     localStorage.setItem("role", "worker");
-  localStorage.setItem("workerName", user.name);
-  localStorage.setItem("workerZone", user.zone);
-  localStorage.setItem("workerIncome", user.weekly_income); // ✅ FIXED
-  localStorage.setItem("workerPhone", user.phone);          // ✅ ADDED
-  localStorage.setItem("workerPlatform", user.platform);    // ✅ ADDED
-  localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("workerName", user.name);
+    localStorage.setItem("workerZone", user.zone);
+    localStorage.setItem("workerIncome", user.weekly_income);
+    localStorage.setItem("workerPhone", user.phone);
+    localStorage.setItem("workerPlatform", user.platform);
+    localStorage.setItem("isLoggedIn", "true");
 
     navigate('/dashboard');
   } else {

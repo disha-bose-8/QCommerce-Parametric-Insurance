@@ -36,7 +36,7 @@ export function ProfilePage() {
           <User size={48} />
         </div>
         <h2>{name}</h2>
-        <p className="profile-member-since">Member since Jan 2026</p>
+        <p className="profile-member-since">Member since April 2026</p>
       </div>
 
       <div className="section-header">

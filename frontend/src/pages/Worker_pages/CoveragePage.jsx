@@ -6,13 +6,16 @@ export function CoveragePage() {
   const [premiumData, setPremiumData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ GET DYNAMIC DATA FROM STORAGE
+  const workerIncome = localStorage.getItem('workerIncome') || 7000;
+  const workerZone = localStorage.getItem('workerZone') || 'HSR Layout';
+
   useEffect(() => {
     const fetchPremium = async () => {
       try {
-        // ✅ CHANGED: Pointing to your LIVE Render Backend
-        // ✅ CHANGED: Using HSR Layout to match your CSV labels
+        // ✅ DYNAMIC URL: Uses the actual income and zone from registration
         const response = await fetch(
-          "https://qshield-backend-nf8y.onrender.com/api/premium/calculate?weekly_income=7000&zone=HSR Layout"
+          `https://qshield-backend-nf8y.onrender.com/api/premium/calculate?weekly_income=${workerIncome}&zone=${workerZone}`
         );
         const data = await response.json();
         setPremiumData(data);
@@ -23,15 +26,32 @@ export function CoveragePage() {
       }
     };
     fetchPremium();
-  }, []);
+  }, [workerIncome, workerZone]); // Re-fetch if storage changes
   
 
-  // Map API fields to your UI variables
   const totalWeekly = premiumData?.total_premium || 0;
   const workerWeekly = premiumData?.worker_pays || 0;
   const platformWeekly = premiumData?.platform_pays || 0;
-  const dailyTotal = premiumData?.daily_equivalent || 0;
   const appliedSplit = premiumData?.applied_split || "60-40";
+
+  const getCoveragePeriod = () => {
+  const today = new Date();
+  
+  // Calculate start of the week (last Monday)
+  const start = new Date(today);
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1); 
+  start.setDate(diff);
+
+  // Calculate end of the week (next Sunday)
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+
+  const options = { month: 'short', day: 'numeric' };
+  const year = today.getFullYear();
+  
+  return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}, ${year}`;
+};
 
   return (
     <div className="coverage-page">
@@ -58,12 +78,18 @@ export function CoveragePage() {
             <div className="coverage-divider"></div>
             <div className="coverage-details">
               <div className="detail-row">
-                <span>Period</span>
-                <div className="detail-value">Mar 24 - Mar 31, 2026</div>
-              </div>
+  <span>Coverage Period</span>
+  
+  <div className="detail-value">{getCoveragePeriod()}</div>
+</div>
               <div className="detail-row">
                 <span>Current Risk Factor</span>
                 <div className="detail-value highlight">{(premiumData?.risk_factor * 100).toFixed(1)}%</div>
+              </div>
+              {/* ✅ ADDED: Show current zone for clarity */}
+              <div className="detail-row">
+                <span>Zone Coverage</span>
+                <div className="detail-value">{workerZone}</div>
               </div>
             </div>
           </div>
@@ -80,7 +106,8 @@ export function CoveragePage() {
             </div>
             <div className="premium-amount">₹{totalWeekly}</div>
             <p className="premium-description">
-              Calculated based on your ₹7,000 income and current environmental triggers.
+              {/* ✅ DYNAMIC TEXT: Shows the actual income used */}
+              Calculated based on your ₹{Number(workerIncome).toLocaleString()} income and current environmental triggers in {workerZone}.
             </p>
           </div>
 
@@ -111,7 +138,6 @@ export function CoveragePage() {
             <p>During High-AQI or Heavy Rain, the platform's contribution increases to reduce worker burden.</p>
           </div>
 
-          {/* Keep your Benefits list here */}
           <div className="coverage-benefits">
             <h3>Automated Payout Thresholds</h3>
             <ul className="benefits-list">
