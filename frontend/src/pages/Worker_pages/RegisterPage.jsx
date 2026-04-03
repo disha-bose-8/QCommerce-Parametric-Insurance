@@ -55,6 +55,8 @@ export function RegisterPage() {
   localStorage.setItem("workerName", formData.name);
   localStorage.setItem("workerZone", formData.zone);
   localStorage.setItem("workerIncome", formData.income);
+  localStorage.setItem("workerPhone", formData.phone);      // ✅ ADD
+  localStorage.setItem("workerPlatform", formData.platform);
   localStorage.setItem("isLoggedIn", "true");
 
   alert(`Account Created! Protecting ${formData.name} in ${formData.zone}.`);
