@@ -5,7 +5,17 @@ import './ProfilePage.css';
 export function ProfilePage() {
   const navigate = useNavigate();
 
+  // ✅ Get real user data
+  const name = localStorage.getItem("workerName") || "User";
+  const zone = localStorage.getItem("workerZone") || "N/A";
+  const income = localStorage.getItem("workerIncome") || "N/A";
+
+  // 🔥 ADD THESE TWO
+  const phone = localStorage.getItem("workerPhone") || "Not available";
+  const platform = localStorage.getItem("workerPlatform") || "Not available";
+
   const handleLogout = () => {
+    localStorage.clear();
     navigate('/');
   };
 
@@ -25,7 +35,7 @@ export function ProfilePage() {
         <div className="profile-avatar">
           <User size={48} />
         </div>
-        <h2>Rajesh Kumar</h2>
+        <h2>{name}</h2>
         <p className="profile-member-since">Member since Jan 2026</p>
       </div>
 
@@ -34,45 +44,47 @@ export function ProfilePage() {
       </div>
 
       <div className="info-section">
+
         <div className="info-item">
-          <div className="info-icon">
-            <User size={20} />
-          </div>
+          <div className="info-icon"><User size={20} /></div>
           <div className="info-content">
             <span className="info-label">Full Name</span>
-            <span className="info-value">Anwpras Rosha</span>
+            <span className="info-value">{name}</span>
           </div>
         </div>
 
         <div className="info-item">
-          <div className="info-icon">
-            <Phone size={20} />
-          </div>
+          <div className="info-icon"><Phone size={20} /></div>
           <div className="info-content">
             <span className="info-label">Phone Number</span>
-            <span className="info-value">+91 98765 43210</span>
+            <span className="info-value">{phone}</span> {/* ✅ FIXED */}
           </div>
         </div>
 
         <div className="info-item">
-          <div className="info-icon">
-            <Briefcase size={20} />
-          </div>
+          <div className="info-icon"><Briefcase size={20} /></div>
           <div className="info-content">
             <span className="info-label">Platform</span>
-            <span className="info-value">Blinkit</span>
+            <span className="info-value">{platform}</span> {/* ✅ FIXED */}
           </div>
         </div>
 
         <div className="info-item">
-          <div className="info-icon">
-            <MapPin size={20} />
-          </div>
+          <div className="info-icon"><MapPin size={20} /></div>
           <div className="info-content">
             <span className="info-label">Zone</span>
-            <span className="info-value">Kormangala</span>
+            <span className="info-value">{zone}</span>
           </div>
         </div>
+
+        <div className="info-item">
+          <div className="info-icon"><Briefcase size={20} /></div>
+          <div className="info-content">
+            <span className="info-label">Weekly Income</span>
+            <span className="info-value">₹ {income}</span>
+          </div>
+        </div>
+
       </div>
 
       <div className="section-header">
@@ -81,23 +93,17 @@ export function ProfilePage() {
 
       <div className="settings-section">
         <button className="settings-item">
-          <div className="settings-icon">
-            <Settings size={20} />
-          </div>
+          <Settings size={20} />
           <span>Account Settings</span>
         </button>
 
         <button className="settings-item">
-          <div className="settings-icon">
-            <Shield size={20} />
-          </div>
+          <Shield size={20} />
           <span>Privacy & Security</span>
         </button>
 
         <button className="settings-item">
-          <div className="settings-icon">
-            <HelpCircle size={20} />
-          </div>
+          <HelpCircle size={20} />
           <span>Help & Support</span>
         </button>
       </div>

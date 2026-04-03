@@ -2,34 +2,54 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, ArrowLeft, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import './LoginPage.css';
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    // Clean the phone number (remove spaces/dashes if any)
-    const cleanPhone = phoneNumber.trim();
+  // Clean the phone number (remove spaces/dashes if any)
+  const cleanPhone = phoneNumber.trim();
 
-    // HACKATHON MOCK LOGIC
-    if (cleanPhone === "9999999999" && password === "admin123") {
-      localStorage.setItem("role", "admin");
-      localStorage.setItem("isLoggedIn", "true");
-      navigate('/admin');
-    } 
-    else if (cleanPhone === "8888888888" && password === "worker123") {
-      localStorage.setItem("role", "worker");
-      localStorage.setItem("isLoggedIn", "true");
-      navigate('/dashboard');
-    } 
-    else {
-      alert("Invalid Credentials!\n\nAdmin: 9999999999 / admin123\nWorker: 8888888888 / worker123");
-    }
-  };
+  // 👉 Check user in database
+  const { data, error } = await supabase
+    .from("workers")
+    .select("*")
+    .eq("phone", cleanPhone)
+    .eq("password", password);
+
+  if (error) {
+    console.error(error);
+    alert("Login error!");
+    return;
+  }
+
+  if (data.length > 0) {
+    const user = data[0];
+
+    localStorage.setItem("role", "worker");
+  localStorage.setItem("workerName", user.name);
+  localStorage.setItem("workerZone", user.zone);
+  localStorage.setItem("workerIncome", user.weekly_income); // ✅ FIXED
+  localStorage.setItem("workerPhone", user.phone);          // ✅ ADDED
+  localStorage.setItem("workerPlatform", user.platform);    // ✅ ADDED
+  localStorage.setItem("isLoggedIn", "true");
+
+    navigate('/dashboard');
+  } else {
+    alert("Invalid Credentials!");
+  }
+};
 
   return (
     <div className="login-container">

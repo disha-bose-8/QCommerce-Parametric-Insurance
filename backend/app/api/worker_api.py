@@ -9,6 +9,7 @@ router = APIRouter()
 # REQUEST SCHEMAS
 class RegisterRequest(BaseModel):
     name: str
+    phone: str
     zone: str
     income: float
     platform: str
@@ -24,6 +25,7 @@ def register_worker(request: RegisterRequest, db: Session = Depends(get_db)):
 
     new_worker = Worker(
         name=request.name,
+        phone=request.phone
         zone=request.zone,
         weekly_income=request.income,
         platform=request.platform,

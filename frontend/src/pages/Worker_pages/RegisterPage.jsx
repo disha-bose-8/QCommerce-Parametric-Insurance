@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, ArrowLeft, Phone, Lock, User, MapPin, IndianRupee, Bike } from 'lucide-react';
 import './RegisterPage.css';
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -21,19 +27,39 @@ export function RegisterPage() {
     setFormData(prev => ({ ...prev, [name]: cleanValue }));
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    
-    // Save to localStorage for the Dashboard to use in API calls
-    localStorage.setItem("role", "worker");
-    localStorage.setItem("workerName", formData.name);
-    localStorage.setItem("workerZone", formData.zone);
-    localStorage.setItem("workerIncome", formData.income);
-    localStorage.setItem("isLoggedIn", "true");
+  const handleRegister = async (e) => {
+  e.preventDefault();
 
-    alert(`Account Created! Protecting ${formData.name} in ${formData.zone}.`);
-    navigate('/dashboard');
-  };
+  // 👉 INSERT into Supabase
+  const { data, error } = await supabase
+    .from("workers")
+    .insert([
+      {
+        name: formData.name,
+        phone: formData.phone,
+        zone: formData.zone,
+        platform: formData.platform,
+        weekly_income: formData.income,
+        password: formData.password,
+      }
+    ]);
+
+  if (error) {
+    console.error(error);
+    alert("Registration failed!");
+    return;
+  }
+
+  // 👉 Keep your existing localStorage (no change)
+  localStorage.setItem("role", "worker");
+  localStorage.setItem("workerName", formData.name);
+  localStorage.setItem("workerZone", formData.zone);
+  localStorage.setItem("workerIncome", formData.income);
+  localStorage.setItem("isLoggedIn", "true");
+
+  alert(`Account Created! Protecting ${formData.name} in ${formData.zone}.`);
+  navigate('/dashboard');
+};
 
   return (
     <div className="register-page">
