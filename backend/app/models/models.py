@@ -11,6 +11,7 @@ class Worker(Base):
     zone = Column(String)
     weekly_income = Column(Float)
     platform = Column(String)
+    password = Column(String)
 
 
 # Policy Table
