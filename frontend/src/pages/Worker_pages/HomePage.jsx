@@ -152,7 +152,7 @@ export function HomePage() {
     const fetchAll = async () => {
       try {
         const [premiumRes, rainRes, heatRes, aqiRes, curfewRes, outageRes] = await Promise.all([
-          fetch(`${BACKEND}/api/premium/calculate?weekly_income=${workerIncome}`),
+          fetch(`${BACKEND}/api/premium/calculate?weekly_income=${workerIncome}&zone=${workerZone}`),
           fetch(`${BACKEND}/api/triggers/rain?lat=${LAT}&lon=${LON}&current_orders=${CURRENT_ORDERS}&baseline_orders=${BASELINE_ORDERS}`),
           fetch(`${BACKEND}/api/triggers/heat?lat=${LAT}&lon=${LON}&current_orders=${CURRENT_ORDERS}&baseline_orders=${BASELINE_ORDERS}`),
           fetch(`${BACKEND}/api/triggers/aqi?city=${workerZone}&current_orders=${CURRENT_ORDERS}&baseline_orders=${BASELINE_ORDERS}`),

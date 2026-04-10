@@ -87,7 +87,7 @@ async def check_heat(lat: float, lon: float) -> dict:
 
 # checks AQI using AQICN — one simple call by city name
 async def check_aqi(city: str) -> dict:
-    
+    city = "Bengaluru"  # hardcoding for now since AQICN free tier doesn't allow lat/lon queries — we can switch to WAQI later which does allow lat/lon
     url = f"https://api.waqi.info/feed/{city}/"
     params = {"token": settings.AQICN_API_KEY}
     
