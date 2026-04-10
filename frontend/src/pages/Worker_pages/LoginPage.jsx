@@ -51,6 +51,7 @@ const handleLogin = async (e) => {
     localStorage.setItem("workerPhone", user.phone);
     localStorage.setItem("workerPlatform", user.platform);
     localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("upiId", `${user.name.toLowerCase().replace(/\s/g,'')}@upi`);
 
     navigate('/dashboard');
   } else {

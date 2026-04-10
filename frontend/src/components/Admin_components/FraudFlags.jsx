@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import './FraudFlags.css';
 
-export default function FraudFlags({ fraudFlags }) {
+export default function FraudFlags({ fraudFlags = [] }) {
   const getScoreColor = (score) => {
     if (score >= 100) return '#ef4444';
     if (score >= 75) return '#f97316';

@@ -1,198 +1,317 @@
+/* ═══════════════════════════════════════════════
+   PayoutsPage.css — QShield Payout Audit Trail
+   Plain CSS, no Tailwind
+═══════════════════════════════════════════════ */
+
 .payouts-page {
-  padding: 1.5rem;
-  max-width: 600px;
+  padding: 1.25rem;
+  max-width: 480px;
   margin: 0 auto;
-  padding-bottom: 2rem;
+  color: #e2e8f0;
 }
 
-.payouts-summary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 16px;
-  padding: 1.5rem;
+/* ── LOADING ── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 200px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   margin-bottom: 1.5rem;
+}
+
+.header-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00ff88;
+}
+
+.page-header h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 2px;
+}
+
+.page-header p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── SUMMARY CARD ── */
+.payouts-summary {
+  background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(59,130,246,0.06));
+  border: 1px solid rgba(0,255,136,0.2);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 14px;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
 }
 
 .summary-label {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 0.5rem;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.5px;
 }
 
 .summary-amount {
-  font-size: 3rem;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 0.75rem;
-  letter-spacing: -0.02em;
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #00ff88;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 8px;
 }
 
 .summary-info {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.9);
+  gap: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 12px;
 }
 
-.summary-dot {
-  color: rgba(255, 255, 255, 0.5);
+.summary-sub-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
-.summary-count {
+.summary-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
-.summary-status {
-  color: rgba(255, 255, 255, 0.8);
+.summary-chip.clean {
+  background: rgba(34,197,94,0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.25);
 }
 
+.summary-chip.flagged {
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.25);
+}
+
+/* ── COVERAGE WEEK BANNER ── */
+.coverage-week-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(0,255,136,0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.cwb-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cwb-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.cwb-date {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.cwb-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: #00ff88;
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.25);
+  border-radius: 6px;
+  padding: 3px 8px;
+  letter-spacing: 1px;
+  animation: status-blink 2s infinite;
+}
+
+@keyframes status-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ── SECTION HEADER ── */
+.section-header {
+  margin-bottom: 12px;
+}
+
+.section-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 2px;
+}
+
+.section-header p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── PAYOUTS LIST ── */
 .payouts-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 12px;
+  padding-bottom: 24px;
 }
 
+.no-data {
+  text-align: center;
+  color: #475569;
+  font-size: 13px;
+  padding: 2rem;
+}
+
+/* ── PAYOUT ITEM ── */
 .payout-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.25rem;
   display: flex;
-  gap: 1rem;
-  transition: all 0.3s ease;
+  gap: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 14px;
+  transition: border-color 0.2s;
 }
 
-.payout-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(99, 102, 241, 0.3);
-  transform: translateY(-2px);
+.payout-item.fraud-flagged {
+  border-color: rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.04);
 }
 
 .payout-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
   flex-shrink: 0;
 }
 
 .payout-details {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  min-width: 0;
 }
 
 .payout-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 4px;
 }
 
 .payout-header h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
   margin: 0;
 }
 
 .payout-amount {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #22c55e;
-}
-
-.payout-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.meta-dot {
-  color: #475569;
-}
-
-.payout-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  width: fit-content;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.payout-status.completed {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.info-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.5rem;
-}
-
-.info-card h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: white;
-  margin: 0 0 1rem 0;
-}
-
-.info-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.info-card li {
-  font-size: 0.875rem;
-  color: #94a3b8;
-  line-height: 1.5;
-  padding-left: 1.25rem;
-  position: relative;
-}
-
-.info-card li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: #6366f1;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
+  color: #00ff88;
+  white-space: nowrap;
 }
 
 .payout-audit {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin: 4px 0;
-  border-left: 2px solid #3b82f6;
-  font-size: 0.75rem;
-  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.audit-text {
+  font-size: 11px;
+  color: #64748b;
   font-style: italic;
+}
+
+.payout-meta {
+  font-size: 11px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+/* ── STATUS BADGES ── */
+.payout-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.payout-status.completed {
+  background: rgba(34,197,94,0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.2);
+}
+
+.payout-status.fraud {
+  background: rgba(239,68,68,0.1);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.25);
+}
+
+/* ── FRAUD FLAGS DETAIL ── */
+.fraud-flags-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.fraud-flag-chip {
+  font-size: 10px;
+  color: #f87171;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 5px;
+  padding: 2px 7px;
 }

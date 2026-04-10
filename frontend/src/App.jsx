@@ -19,7 +19,7 @@ export default function App() {
   IF YOU SEE RED → TAILWIND WORKS
 </div>*/
 
-import { RouterProvider } from 'react-router';
+import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
 
 function App() {

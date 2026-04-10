@@ -1,11 +1,76 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ═══════════════════════════════════════════════
+   index.css — QShield Global Base
+   NO Tailwind. Plain CSS only.
+═══════════════════════════════════════════════ */
 
-/* Plain CSS fallback (NO @apply) */
-body {
-  background-color: #f3f4f6;
-  color: #111827;
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
-  font-family: Inter, system-ui, sans-serif;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: #0d0d12;
+  color: #e2e8f0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: #f1f5f9;
+}
+
+p {
+  color: #94a3b8;
+}
+
+a {
+  color: #00ff88;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+
+/* Focus outline */
+:focus-visible {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
 }

@@ -1,7 +1,7 @@
 import { DollarSign } from 'lucide-react';
 import './WorkerList.css';
 
-export default function PayoutLog({ payouts }) {
+export default function PayoutLog({ payouts = [] }) {
   const totalAmount = payouts.reduce((sum, p) => sum + p.amount, 0);
 
   return (

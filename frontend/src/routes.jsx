@@ -1,5 +1,6 @@
-import { createBrowserRouter } from "react-router";
-// Worker Imports (These look correct based on your folder structure)
+import { createBrowserRouter } from "react-router-dom";
+
+// Worker Pages
 import { StartPage } from "./pages/Worker_pages/StartPage";
 import { LoginPage } from "./pages/Worker_pages/LoginPage";
 import { RegisterPage } from "./pages/Worker_pages/RegisterPage";
@@ -10,35 +11,35 @@ import { PayoutsPage } from "./pages/Worker_pages/PayoutsPage";
 import { AlertsPage } from "./pages/Worker_pages/AlertsPage";
 import { ProfilePage } from "./pages/Worker_pages/ProfilePage";
 
-// FIXED: Added /Admin_pages/ to the path
-import { AdminDashboard } from "./pages/Admin_pages/AdminDashboard";
+// ✅ FIXED ADMIN IMPORT
+import AdminDashboard from "./pages/Admin_pages/AdminDashboard";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: StartPage,
+    element: <StartPage />,
   },
   {
     path: "/login",
-    Component: LoginPage,
+    element: <LoginPage />,
   },
   {
     path: "/register",
-    Component: RegisterPage,
+    element: <RegisterPage />,
   },
   {
     path: "/admin",
-    Component: AdminDashboard, // This was likely failing before
+    element: <AdminDashboard />, // ✅ FIXED
   },
   {
     path: "/dashboard",
-    Component: DashboardLayout,
+    element: <DashboardLayout />,
     children: [
-      { index: true, Component: HomePage },
-      { path: "coverage", Component: CoveragePage },
-      { path: "payouts", Component: PayoutsPage },
-      { path: "alerts", Component: AlertsPage },
-      { path: "profile", Component: ProfilePage },
+      { index: true, element: <HomePage /> },
+      { path: "coverage", element: <CoveragePage /> },
+      { path: "payouts", element: <PayoutsPage /> },
+      { path: "alerts", element: <AlertsPage /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 ]);
