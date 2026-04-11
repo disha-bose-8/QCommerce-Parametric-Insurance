@@ -292,3 +292,22 @@
   background: #f59e0b;
   flex-shrink: 0;
 }
+
+.sim-select {
+  background: #1a1a2e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.sim-status-bar {
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  margin: 0 0 16px 0;
+}
+.sim-status-bar.success { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+.sim-status-bar.error   { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+.sim-status-bar.pending { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }

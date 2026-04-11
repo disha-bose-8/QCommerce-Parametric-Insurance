@@ -1,55 +1,88 @@
-import { AlertTriangle } from 'lucide-react';
-import './FraudFlags.css';
+// FraudFlags.jsx — wired to AdminDashboard's runFraudEngine output
 
-export default function FraudFlags({ fraudFlags = [] }) {
-  const getScoreColor = (score) => {
-    if (score >= 100) return '#ef4444';
-    if (score >= 75) return '#f97316';
-    return '#f59e0b';
-  };
+import { AlertTriangle, ShieldCheck } from "lucide-react";
+import "./FraudFlags.css";
 
+const SEVERITY_COLOR = {
+  HIGH:   "#ef4444",
+  MEDIUM: "#f97316",
+  LOW:    "#f59e0b",
+};
+
+export default function FraudFlags({ allFraud = [] }) {
   return (
-    <div className="admin-section">
-      <div className="section-header">
-        <div className="section-title-group">
-          <AlertTriangle size={24} className="section-icon" />
-          <h2>Fraud Detection Flags</h2>
+    <div className="fraud-panel">
+      <div className="fraud-panel-header">
+        <AlertTriangle size={20} color="#f59e0b" />
+        <div>
+          <h2>Fraud Detection Engine</h2>
+          <p>
+            {allFraud.length} claim(s) flagged — GPS spoofing, weather
+            anomalies, rapid claims
+          </p>
         </div>
-        <span className="section-badge alert">
-          {fraudFlags.length} flags
-        </span>
+        <div className={`fraud-count-badge ${allFraud.length > 0 ? "has-fraud" : ""}`}>
+          {allFraud.length}
+        </div>
       </div>
 
-      <div className="fraud-list">
-        {fraudFlags.map((flag) => (
-          <div key={flag.id} className="fraud-card">
-            <div className="fraud-header">
-              <div className="fraud-worker-info">
-                <span className="fraud-worker">{flag.worker}</span>
-                <span className="fraud-zone">{flag.zone}</span>
-              </div>
-
+      {allFraud.length === 0 ? (
+        <div className="fraud-empty">
+          <ShieldCheck size={18} color="#22c55e" />
+          <span>All claims clean — no anomalies detected</span>
+        </div>
+      ) : (
+        <div className="fraud-list">
+          {allFraud.slice(0, 5).map((result, i) => {
+            const color = SEVERITY_COLOR[result.severity] ?? "#f59e0b";
+            return (
               <div
-                className="fraud-score"
-                style={{
-                  background: `${getScoreColor(flag.score)}20`,
-                  color: getScoreColor(flag.score),
-                }}
+                key={result.payout.id ?? i}
+                className={`fraud-item severity-${result.severity.toLowerCase()}`}
               >
-                {flag.score}
+                <div className="fraud-item-top">
+                  <span className="fraud-worker">
+                    Worker #{result.payout.worker_id} —{" "}
+                    {result.payout.trigger_type}
+                  </span>
+                  <div className="fraud-badges">
+                    <span
+                      className="severity-badge"
+                      style={{
+                        background: `${color}22`,
+                        color,
+                        border: `1px solid ${color}55`,
+                      }}
+                    >
+                      {result.severity}
+                    </span>
+                    <span className="fraud-score">Score: {result.score}</span>
+                  </div>
+                </div>
+
+                <div className="fraud-item-amount">
+                  ₹{result.payout.amount?.toLocaleString()} —{" "}
+                  {new Date(result.payout.created_at).toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+
+                <div className="fraud-flags-list">
+                  {result.flags.map((f, j) => (
+                    <div key={j} className="fraud-flag-row">
+                      <span className="flag-dot" />
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <p className="fraud-reason">{flag.reason}</p>
-
-            <div className="fraud-footer">
-              <span className={`fraud-status-badge ${flag.status}`}>
-                {flag.status}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
