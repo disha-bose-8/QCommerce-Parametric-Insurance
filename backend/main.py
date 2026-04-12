@@ -17,6 +17,8 @@ from app.api.premium_api  import router as premium_router
 from app.api.triggers_api import router as triggers_router
 from app.api.simulate     import router as simulate_router   # ← NEW
 
+
+
 # ── ORACLE BACKGROUND TASK ────────────────────────────────────────────────────
 
 async def oracle_polling_loop():
@@ -39,6 +41,7 @@ async def lifespan(app: FastAPI):
     oracle_task = asyncio.create_task(oracle_polling_loop())
     yield
     oracle_task.cancel()
+
 
 # ── APP ───────────────────────────────────────────────────────────────────────
 
@@ -70,3 +73,8 @@ def root():
         "env":            settings.ENVIRONMENT,
         "oracle_active":  True,
     }
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
