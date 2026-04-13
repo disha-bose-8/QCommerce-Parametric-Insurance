@@ -37,24 +37,26 @@ def register_worker(request: RegisterRequest, db: Session = Depends(get_db)):
             "uv_index":       5,
         })
         # worker_pays is the worker's share of the weekly premium
-        premium_weekly = round(pricing.get("worker_pays", request.income * PREMIUM_RATE), 2)
+        premium_weekly = float(round(pricing.get("worker_pays", request.income * PREMIUM_RATE), 2))
     except Exception as e:
         print(f"⚠️ Dynamic pricing failed at registration, using flat rate: {e}")
-        premium_weekly = round(request.income * PREMIUM_RATE, 2)
+        premium_weekly = float(round(request.income * PREMIUM_RATE, 2))
 
     # Seed wallet with 4 weeks of premiums so they can afford initial deductions
-    initial_wallet = round(premium_weekly * 4, 2)
+    initial_wallet = float(round(premium_weekly * 4, 2))
 
     new_worker = Worker(
-        name           = request.name,
-        phone          = request.phone,
-        zone           = request.zone,
-        weekly_income  = request.income,
-        platform       = request.platform,
-        password       = request.password,
-        premium_weekly = premium_weekly,
-        wallet_balance = initial_wallet,
-    )
+    name           = request.name,
+    phone          = request.phone,
+    zone           = request.zone,
+    weekly_income  = request.income,
+    platform       = request.platform,
+    password       = request.password,
+    premium_weekly = float(premium_weekly),   # cast numpy → Python float
+    wallet_balance = float(initial_wallet),   # cast numpy → Python float
+    claim_count    = 0,
+    total_payout_received = 0.0,
+)
     db.add(new_worker)
     db.commit()
     db.refresh(new_worker)
@@ -116,6 +118,8 @@ def get_worker(worker_id: int, db: Session = Depends(get_db)):
         "phone":          worker.phone,
         "premium_weekly": worker.premium_weekly or round((worker.weekly_income or 0) * PREMIUM_RATE, 2),
         "wallet_balance": worker.wallet_balance or 0.0,
+        "claim_count":            worker.claim_count or 0,           
+        "total_payout_received":  worker.total_payout_received or 0.0, 
     }
 
 
@@ -142,10 +146,10 @@ def collect_weekly_premiums(db: Session = Depends(get_db)):
                 "claim_count":          getattr(w, "claim_count", 0),
                 "total_payout_history": getattr(w, "total_payout_received", 0.0),
             })
-            premium = round(pricing.get("worker_pays", (w.weekly_income or 0) * PREMIUM_RATE), 2)
+            premium = float(round(pricing.get("worker_pays", (w.weekly_income or 0) * PREMIUM_RATE), 2))
         except Exception as e:
             print(f"⚠️ Dynamic pricing failed for worker {w.id}, using stored rate: {e}")
-            premium = w.premium_weekly or round((w.weekly_income or 0) * PREMIUM_RATE, 2)
+            premium = float(round((w.weekly_income or 0) * PREMIUM_RATE, 2))
 
         # Update stored premium_weekly to keep DB in sync with dynamic price
         w.premium_weekly = premium
