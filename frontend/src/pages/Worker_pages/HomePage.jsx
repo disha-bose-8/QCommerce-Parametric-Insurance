@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Shield, TrendingUp, MapPin, Bell, Loader2,
-  Globe, Sun, Activity, CheckCircle, AlertTriangle, X,
+  Globe, Sun, Activity, CheckCircle, AlertTriangle, X, Wallet, CreditCard,
 } from 'lucide-react';
 import { CircularProgress } from '../../components/Worker_components/CircularProgress';
 import LiveRiskTracker from '../../components/Worker_components/LiveRiskTracker';
@@ -14,7 +14,6 @@ const BACKEND = 'https://qshield-backend-nf8y.onrender.com';
 // ─── FRAUD HELPERS ────────────────────────────────────────────────────────────
 
 const CITY_BOUNDS = { latMin: 12.83, latMax: 13.14, lonMin: 77.46, lonMax: 77.75 };
-
 const HISTORICAL_BASELINES = {
   rain: { avgMM: 3.2, stdDev: 2.1 },
   aqi:  { avgAQI: 95, stdDev: 30 },
@@ -98,6 +97,82 @@ function PayoutModal({ amount, workerName, upiId, onClose }) {
   );
 }
 
+// ─── WALLET CARD ──────────────────────────────────────────────────────────────
+
+function WalletCard({ walletBalance, premiumWeekly, payoutHistory }) {
+  // Derive recent premium deductions from payout history: negative "PREMIUM" entries
+  // Since the backend deducts from wallet on collect-premiums (not logged as payouts),
+  // we show the current balance + weekly premium cost as a deduction preview.
+  const premiumDeductions = payoutHistory.filter(p =>
+    p.trigger_type === 'PREMIUM' || p.notes?.includes?.('premium')
+  );
+
+  return (
+    <div className="wallet-card">
+      <div className="wallet-header">
+        <Wallet size={20} color="#00ff88" />
+        <h3>Wallet Balance</h3>
+      </div>
+
+      <div className="wallet-balance-row">
+        <span className="wallet-amount">₹{walletBalance.toLocaleString()}</span>
+        <span className="wallet-label">Available</span>
+      </div>
+
+      <div className="wallet-premium-row">
+        <CreditCard size={15} color="#f59e0b" />
+        <span className="wallet-premium-label">Weekly Premium</span>
+        <span className="wallet-premium-value" style={{ color: '#f59e0b' }}>
+          − ₹{premiumWeekly.toLocaleString()}
+        </span>
+      </div>
+
+      <div className="wallet-after-row">
+        <span className="wallet-after-label">Balance after next deduction</span>
+        <span className="wallet-after-value">
+          ₹{Math.max(0, walletBalance - premiumWeekly).toLocaleString()}
+        </span>
+      </div>
+
+      {/* Premium deduction history */}
+      <div className="premium-deduction-log">
+        <div className="deduction-log-title">Recent Activity</div>
+        {payoutHistory.length === 0 ? (
+          <div className="deduction-empty">No transactions yet</div>
+        ) : (
+          payoutHistory.slice(0, 5).map((p, i) => {
+            const isPremium = p.trigger_type === 'PREMIUM';
+            const date      = new Date(p.created_at).toLocaleDateString('en-IN', {
+              day: 'numeric', month: 'short',
+            });
+            return (
+              <div key={p.id || i} className="deduction-row">
+                <div className="deduction-left">
+                  <span className={`deduction-icon ${isPremium ? 'deduction-out' : 'deduction-in'}`}>
+                    {isPremium ? '↓' : '↑'}
+                  </span>
+                  <div>
+                    <span className="deduction-type">
+                      {isPremium ? 'Premium Deducted' : `Payout — ${p.trigger_type}`}
+                    </span>
+                    <span className="deduction-date">{date}</span>
+                  </div>
+                </div>
+                <span
+                  className="deduction-amount"
+                  style={{ color: isPremium ? '#ef4444' : '#00ff88' }}
+                >
+                  {isPremium ? '−' : '+'}₹{(p.amount || 0).toLocaleString()}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 const recentAlerts = [
@@ -111,17 +186,23 @@ export function HomePage() {
   const [loading,      setLoading]      = useState(true);
   const [showModal,    setShowModal]    = useState(false);
   const [fraudFlags,   setFraudFlags]   = useState([]);
-  const [todayPayout,  setTodayPayout]  = useState(null); // payout already made today?
+  const [todayPayout,  setTodayPayout]  = useState(null);
+  // Wallet state — initialised from localStorage (set at login)
+  const [walletBalance, setWalletBalance] = useState(
+    Number(localStorage.getItem('walletBalance')) || 0
+  );
+  const [payoutHistory, setPayoutHistory] = useState([]);
+
   const lastTriggerTime = useRef(null);
 
-  // ── Worker data from localStorage (set by LoginPage on login) ──
-  const workerId     = Number(localStorage.getItem('workerId'))   || null;
-  const workerName   = localStorage.getItem('workerName')         || 'Worker';
-  const workerZone   = localStorage.getItem('workerZone')         || 'Bengaluru';
+  // ── Worker data from localStorage ──
+  const workerId     = Number(localStorage.getItem('workerId'))    || null;
+  const workerName   = localStorage.getItem('workerName')          || 'Worker';
+  const workerZone   = localStorage.getItem('workerZone')          || 'Bengaluru';
   const workerIncome = Number(localStorage.getItem('workerIncome')) || 7000;
-  const upiId        = localStorage.getItem('upiId')              || `${workerName.toLowerCase()}@upi`;
+  const premiumWeekly = Number(localStorage.getItem('premiumWeekly')) || Math.round(workerIncome * 0.08);
+  const upiId        = localStorage.getItem('upiId')               || `${workerName.toLowerCase()}@upi`;
 
-  // Correct formula: weekly_income ÷ 7 × 0.5
   const payoutAmount = Math.round(workerIncome / 7 * 0.5);
 
   const LAT = 12.9716;
@@ -129,19 +210,40 @@ export function HomePage() {
   const BASELINE_ORDERS = 100;
   const CURRENT_ORDERS  = 60;
 
-  // ── CHECK if payout already made today for this worker ──
-  const checkTodayPayout = async () => {
+  // ── Fetch latest wallet balance from backend ──
+  const refreshWallet = async () => {
+    if (!workerId) return;
+    try {
+      const res  = await fetch(`${BACKEND}/api/worker/${workerId}`);
+      const data = await res.json();
+      if (data?.wallet_balance !== undefined) {
+        const newBalance = data.wallet_balance;
+        setWalletBalance(newBalance);
+        localStorage.setItem('walletBalance', newBalance);
+        // Also refresh premium_weekly in case it changed via dynamic pricing
+        if (data.premium_weekly) {
+          localStorage.setItem('premiumWeekly', data.premium_weekly);
+        }
+      }
+    } catch (e) {
+      console.error('Wallet refresh error:', e);
+    }
+  };
+
+  // ── Fetch payout history for this worker ──
+  const fetchPayoutHistory = async () => {
     if (!workerId) return;
     try {
       const res  = await fetch(`${BACKEND}/api/payout/worker/${workerId}`);
       const data = await res.json();
       if (Array.isArray(data)) {
+        setPayoutHistory(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
         const today = new Date().toDateString();
         const found = data.find(p => new Date(p.created_at).toDateString() === today);
         if (found) setTodayPayout(found);
       }
     } catch (e) {
-      console.error('Payout check error:', e);
+      console.error('Payout history error:', e);
     }
   };
 
@@ -171,8 +273,14 @@ export function HomePage() {
     };
 
     fetchAll();
-    checkTodayPayout();
-    const interval = setInterval(fetchAll, 30000);
+    fetchPayoutHistory();
+    refreshWallet();
+
+    const interval = setInterval(() => {
+      fetchAll();
+      // Refresh wallet every 30s to catch admin premium collections
+      refreshWallet();
+    }, 30000);
     return () => clearInterval(interval);
   }, [workerIncome, workerZone]);
 
@@ -185,14 +293,12 @@ export function HomePage() {
     setFraudFlags(flags);
   }, [triggerData, loading]);
 
-  // ── AUTO PAYOUT — only if a real trigger fires (no FORCE_TRIGGER) ──
+  // ── AUTO PAYOUT ──
   useEffect(() => {
     const isTriggered = Object.values(triggerData).some(t => t?.confirmed);
     if (!isTriggered) return;
     if (!workerId) return;
-    // Cooldown: don't fire twice within 60s in same session
     if (lastTriggerTime.current && Date.now() - lastTriggerTime.current < 60000) return;
-    // Don't fire if already paid today
     if (todayPayout) return;
 
     const triggerPayout = async () => {
@@ -210,7 +316,9 @@ export function HomePage() {
         });
         lastTriggerTime.current = Date.now();
         setShowModal(true);
-        checkTodayPayout();
+        // Refresh both payout history and wallet after settlement
+        fetchPayoutHistory();
+        refreshWallet();
       } catch (err) {
         console.error('Payout error:', err);
       }
@@ -219,7 +327,6 @@ export function HomePage() {
     triggerPayout();
   }, [triggerData]);
 
-  // isTriggered = real sensor OR already paid today (show settled state)
   const isTriggered = todayPayout !== null || Object.values(triggerData).some(t => t?.confirmed);
 
   return (
@@ -291,6 +398,13 @@ export function HomePage() {
           )}
         </div>
       </div>
+
+      {/* ── WALLET CARD ── */}
+      <WalletCard
+        walletBalance={walletBalance}
+        premiumWeekly={premiumWeekly}
+        payoutHistory={payoutHistory}
+      />
 
       {/* WEEKLY COVERAGE CARD */}
       <div className="weekly-coverage-card">

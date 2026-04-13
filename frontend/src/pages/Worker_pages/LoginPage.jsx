@@ -40,20 +40,25 @@ const handleLogin = async (e) => {
   }
 
   if (data && data.length > 0) {
-    const user = data[0];
+  const user = data[0];
 
-    // ✅ CAPTURE THE ID FROM THE DATABASE
-    localStorage.setItem("workerId", user.id); 
-    localStorage.setItem("role", "worker");
-    localStorage.setItem("workerName", user.name);
-    localStorage.setItem("workerZone", user.zone);
-    localStorage.setItem("workerIncome", user.weekly_income);
-    localStorage.setItem("workerPhone", user.phone);
-    localStorage.setItem("workerPlatform", user.platform);
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("upiId", `${user.name.toLowerCase().replace(/\s/g,'')}@upi`);
+  localStorage.setItem("workerId", user.id);
+  localStorage.setItem("role", "worker");
+  localStorage.setItem("workerName", user.name);
+  localStorage.setItem("workerZone", user.zone);
+  localStorage.setItem("workerIncome", user.weekly_income);
+  localStorage.setItem("workerPhone", user.phone);
+  localStorage.setItem("workerPlatform", user.platform);
 
-    navigate('/dashboard');
+  // 🔥 ADD THESE (VERY IMPORTANT)
+  localStorage.setItem("walletBalance", user.wallet_balance ?? 0);
+  localStorage.setItem("premiumWeekly", user.premium_weekly ?? Math.round((user.weekly_income || 0) * 0.08));
+
+  localStorage.setItem("upiId", `${user.name.toLowerCase().replace(/\s/g,'')}@upi`);
+  localStorage.setItem("isLoggedIn", "true");
+
+  navigate('/dashboard');
+
   } else {
     alert("Invalid Credentials!");
   }

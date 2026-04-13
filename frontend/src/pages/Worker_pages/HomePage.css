@@ -565,3 +565,159 @@
   border-top: 1px dashed rgba(0,255,136,0.2);
   padding-top: 10px;
 }
+
+/* ── Wallet Card ────────────────────────────────────────────────────── */
+.wallet-card {
+  background: linear-gradient(135deg, #0f1f12 0%, #0d0d12 100%);
+  border: 1px solid #00ff8822;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+ 
+.wallet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+ 
+.wallet-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+ 
+.wallet-balance-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+ 
+.wallet-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #00ff88;
+  letter-spacing: -0.02em;
+}
+ 
+.wallet-label {
+  font-size: 0.78rem;
+  color: #475569;
+}
+ 
+.wallet-premium-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #1a1a0a;
+  border: 1px solid #f59e0b22;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+ 
+.wallet-premium-label {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  flex: 1;
+}
+ 
+.wallet-premium-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+ 
+.wallet-after-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.75rem 0.9rem;
+}
+ 
+.wallet-after-label {
+  font-size: 0.75rem;
+  color: #475569;
+}
+ 
+.wallet-after-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+ 
+/* ── Premium Deduction Log ──────────────────────────────────────────── */
+.premium-deduction-log {
+  border-top: 1px solid #1e293b;
+  padding-top: 0.85rem;
+}
+ 
+.deduction-log-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+ 
+.deduction-empty {
+  font-size: 0.82rem;
+  color: #334155;
+  text-align: center;
+  padding: 0.5rem 0;
+}
+ 
+.deduction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #0f172a;
+}
+ 
+.deduction-row:last-child {
+  border-bottom: none;
+}
+ 
+.deduction-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+ 
+.deduction-icon {
+  font-size: 1rem;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+ 
+.deduction-in  { background: #00ff8822; color: #00ff88; }
+.deduction-out { background: #ef444422; color: #ef4444; }
+ 
+.deduction-type {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  display: block;
+}
+ 
+.deduction-date {
+  font-size: 0.72rem;
+  color: #475569;
+  display: block;
+}
+ 
+.deduction-amount {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
