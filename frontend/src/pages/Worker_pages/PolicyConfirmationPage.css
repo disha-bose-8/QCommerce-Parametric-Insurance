@@ -1,0 +1,205 @@
+.confirmation-page {
+  min-height: 100vh;
+  background: #0d0d12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.confirmation-container {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header */
+.confirmation-header {
+  text-align: center;
+}
+
+.success-icon {
+  margin-bottom: 12px;
+  animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.confirmation-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.confirmation-header p {
+  color: #888;
+  font-size: 14px;
+  margin: 0;
+}
+
+.confirmation-header p strong {
+  color: #00ff88;
+}
+
+/* Policy card */
+.policy-card {
+  background: #13131a;
+  border: 1px solid #00ff8833;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.policy-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #aaa;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.policy-badge {
+  margin-left: auto;
+  background: #00ff8820;
+  color: #00ff88;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1px solid #00ff8840;
+  letter-spacing: 0.08em;
+}
+
+.policy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.policy-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stat-value {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stat-value.highlight {
+  color: #00ff88;
+}
+
+.stat-value.small {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ccc;
+}
+
+.policy-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #555;
+  border-top: 1px solid #1e1e2e;
+  padding-top: 12px;
+}
+
+.policy-footer strong {
+  color: #888;
+}
+
+/* Coverage list */
+.coverage-list {
+  background: #13131a;
+  border: 1px solid #1e1e2e;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.coverage-title {
+  font-size: 12px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+}
+
+.coverage-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coverage-list ul li {
+  font-size: 13px;
+  color: #ccc;
+}
+
+/* CTA button */
+.btn-dashboard {
+  width: 100%;
+  padding: 14px;
+  background: #00ff88;
+  color: #0d0d12;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.btn-dashboard:hover {
+  opacity: 0.88;
+}
+
+/* Loading / error states */
+.confirmation-loading,
+.confirmation-error {
+  text-align: center;
+  color: #888;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

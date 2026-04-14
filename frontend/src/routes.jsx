@@ -10,8 +10,8 @@ import { CoveragePage } from "./pages/Worker_pages/CoveragePage";
 import { PayoutsPage } from "./pages/Worker_pages/PayoutsPage";
 import { AlertsPage } from "./pages/Worker_pages/AlertsPage";
 import { ProfilePage } from "./pages/Worker_pages/ProfilePage";
+import { PolicyConfirmationPage } from "./pages/Worker_pages/PolicyConfirmationPage";
 
-// ✅ FIXED ADMIN IMPORT
 import AdminDashboard from "./pages/Admin_pages/AdminDashboard";
 
 export const router = createBrowserRouter([
@@ -29,7 +29,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <AdminDashboard />, // ✅ FIXED
+    element: <AdminDashboard />, 
+  },
+   { 
+    path: "/policy-confirmation/:id", 
+    element: <PolicyConfirmationPage /> 
   },
   {
     path: "/dashboard",
