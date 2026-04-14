@@ -3,7 +3,7 @@
 
 > Automatically detects when a delivery worker can't work due to rain, heat, AQI, curfew, or platform outage - and pays them instantly. No forms. No waiting. No manual claims.
 
-**Live Demo:** https://qshield.vercel.app
+**Live Demo:** https://qshield.netlify.app
 **Backend API + Swagger:** https://qshield-backend-nf8y.onrender.com/docs
 **Built for:** Guidewire DEVTrails University Hackathon 2026 
 
@@ -140,7 +140,7 @@ When a trigger fires → backend calls `POST /api/payout/create` for every eligi
 | Model Storage | joblib (.pkl files) | Save/load trained model |
 | Weather | OpenWeatherMap API | Live rain, heat, UV data |
 | AQI | OpenAQ API | Live air quality readings |
-| Frontend Hosting | Vercel | Auto-deploys from GitHub |
+| Frontend Hosting | netlify | Auto-deploys from GitHub |
 | Backend Hosting | Render | FastAPI server, auto-deploys from GitHub |
 | Database Hosting | Supabase | Managed PostgreSQL |
 | API Docs | Swagger UI (/docs) | Built into FastAPI |
