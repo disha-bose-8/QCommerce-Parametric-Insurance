@@ -1,336 +1,343 @@
-# QShield — AI-Powered Parametric Income Protection
-### For Q-Commerce Delivery Partners
+# QShield 🛡️
+### AI-Powered Parametric Income Protection for Gig Workers
 
-> An AI-driven, weekly parametric income protection system that automatically compensates gig workers for verified income loss events — with zero manual claims.
+> Automatically detects when a delivery worker can't work due to rain, heat, AQI, curfew, or platform outage - and pays them instantly. No forms. No waiting. No manual claims.
+
+**Live Demo:** https://qshield.vercel.app
+**Backend API + Swagger:** https://qshield-backend-nf8y.onrender.com/docs
+**Built for:** Guidewire DEVTrails University Hackathon 2026 
 
 ---
 
-## Problem
+## What is QShield?
 
-Q-commerce delivery partners earn on a daily basis, and their income depends directly on order volume and uninterrupted operations. Even a single disruption-day can significantly affect their weekly earnings.
+QShield is a weekly insurance product for Q-commerce delivery workers (Zepto, Blinkit, Swiggy Instamart). When something outside a worker's control stops them from working, QShield automatically detects it and sends money to their wallet — no human involved.
 
-Their income is especially vulnerable to:
+This is called **parametric insurance**: instead of asking "did you lose income?", the system asks "did this measurable event happen?" If yes, it pays out immediately.
 
-- Heavy rainfall
-- Extreme heat
-- Severe AQI
+Each worker gets a **personalised weekly premium** calculated by an AI model — not a flat rate. Workers who claim more pay higher premiums over time, just like real insurance.
+
+---
+
+## The Problem
+
+Delivery workers earn daily. One disruption day can mean no food on the table. They have zero protection against:
+
+- Heavy rainfall that makes roads undeliverable
+- Extreme heat that makes outdoor work dangerous
+- Hazardous air quality (AQI spikes)
 - Government-declared curfews
-- Platform outages
+- Platform outages that take the app offline
 
-Today, delivery partners absorb the full financial impact of these external disruptions.
-
-We propose an AI-driven, weekly parametric income protection system that automatically compensates verified income loss events without manual claims.
-
-This model strictly follows hackathon requirements:
-
-- Weekly pricing structure
-- Loss-of-income-only coverage
-- Automated parametric triggering
+Traditional insurance doesn't work for gig workers - too expensive, too slow, and requires manual claims they don't have time to file.
 
 ---
 
-## Target Persona
+## How It Works - Full Flow
 
-**Q-Commerce Delivery Partner (Zepto / Blinkit / Swiggy Instamart)**
-
-- Earns daily wages tied to order volume
-- Operates in hyperlocal urban zones
-- Highly exposed to environmental conditions
-- Plans finances week-to-week
-
----
-
-## Persona-Based Scenario
-
-A Q-commerce delivery partner operating in a hyperlocal zone begins the week with active coverage. On Tuesday, rainfall in the zone exceeds 20mm/hour (IMD heavy rain threshold). Simultaneously, order volume drops by 30% compared to the rolling 4-week weekday average.
-
-The system automatically validates both conditions, classifies the day as a disruption-day, and credits one daily payout to the worker. No manual claim submission is required.
+| Step | What Happens | Who Does It |
+|------|-------------|-------------|
+| 1. Register | Worker signs up with name, zone, income, platform | Worker |
+| 2. Premium Set | AI model calculates weekly premium based on zone + income + claim history | System (AI) |
+| 3. Wallet Funded | Wallet seeded with 4 weeks of premiums on signup | System |
+| 4. Live Monitoring | Sensors poll rain, heat, AQI, curfew, outage every 30 seconds | Oracle |
+| 5. Trigger Fires | A threshold is breached (e.g. rain >= 20mm/hr) | Oracle |
+| 6. Auto Payout | System instantly creates a payout — no human involved | System |
+| 7. Worker Notified | Worker sees payout receipt and wallet update on dashboard | Frontend |
+| 8. Premium Collected | Admin collects weekly premiums — amount is dynamic per worker | Admin |
 
 ---
 
-## Coverage Model
+## Where AI Is Used
 
-- Weekly micro-policy (Monday–Sunday)
-- Premium calculated before the coverage week begins
-- Payout issued per verified disruption-day
-- Maximum payout capped at 2 disruption-days per week
-- No stacking of multiple triggers on the same day
-- Coverage scope: loss of income only — no health, vehicle repair, or accident claims
+### 1. Random Forest Risk Model (Dynamic Pricing)
 
----
+A `RandomForestRegressor` trained on 2,000 synthetic worker-week records. It predicts the expected weekly income loss for a given worker, then uses that to calculate their personalised premium.
 
-## Application Workflow
+**9 input features:**
 
-1. Worker registers and links earnings data
-2. System calculates rolling 4-week baseline income (weekday and weekend baselines tracked separately)
-3. Eligibility check: ≥ 3 active delivery days in the prior week
-4. AI estimates weekly disruption probabilities
-5. Weekly premium is calculated and displayed
-6. Premium is auto-deducted before the coverage week begins
-7. Real-time monitoring of environmental and platform triggers
-8. If conditions are met, payout is automatically processed
-9. Worker dashboard updates with payout details and coverage status
+| Feature | What It Represents |
+|---------|-------------------|
+| `avg_weekly_income` | How much the worker earns |
+| `zone_id` | Which zone they operate in (label encoded) |
+| `shift_id` | Morning / Peak / Night |
+| `rain_intensity` | Current rainfall in mm/hr |
+| `traffic_congestion` | 0–1 congestion index |
+| `aqi_level` | Current AQI reading |
+| `uv_index` | UV level |
+| `claim_count` | How many payouts this worker has received (feeds into surcharge) |
+| `total_payout_history` | Total ₹ paid out to this worker ever |
 
----
+**What it outputs:**
+- Predicted income loss in ₹
+- Dynamic risk factor (clamped 2%–8% of weekly income)
+- Worker premium = `risk_factor × income × 60%`
+- Platform premium = `risk_factor × income × 40%`
 
-## Parametric Trigger Design
+**Claim history surcharge logic** — workers who claim more pay more:
 
-### Environmental Triggers — Dual Validation Required
+| Claim Count | Surcharge Added to Risk Factor |
+|-------------|-------------------------------|
+| 0–1 claims | +0.000 |
+| 2–3 claims | +0.003 |
+| 4–5 claims | +0.006 |
+| 6+ claims | +0.010 |
+| Payouts > 3× weekly income | +0.004 additional |
 
-A disruption-day is activated only when both conditions are met simultaneously:
-
-1. An environmental threshold is crossed
-2. Zone order volume drops ≥ 25% compared to the rolling 4-week baseline (weekday and weekend baselines tracked separately)
-
-| Trigger | Threshold | Rationale | Source |
-|---|---|---|---|
-| Heavy Rain | ≥ 20mm/hour | IMD "heavy rain" definition — operationally disrupts deliveries | OpenWeatherMap API |
-| Extreme Heat | ≥ 42°C sustained | Dangerous outdoor working conditions | OpenWeatherMap API |
-| Severe AQI | AQI ≥ 350 | Hazardous per CPCB classification | CPCB / OpenAQ API |
-
-### Social & Technical Triggers — Single Validation
-
-| Trigger | Threshold | Source |
-|---|---|---|
-| Official Curfew | Government restriction covering peak delivery hours (10am–10pm) | Govt feed (mocked) |
-| Platform Outage | App/server downtime ≥ 3 hours | Platform status API (mocked) |
+**Model performance:** R² = 0.86 · MAE = ₹51 on test set
 
 ---
 
-## Payout Model
+### 2. Fraud Detection Engine
 
-| Parameter | Value |
-|---|---|
-| Baseline income | Rolling 4-week average weekly income |
-| Daily baseline | Weekly income ÷ 7 |
-| Per disruption-day payout | 50% of daily baseline |
-| Maximum weekly payout | 2 disruption-days |
+Every payout is scored in real time before being surfaced to the admin. Four signals are checked:
 
-**Example:**
+| Signal | Fraud Score Added |
+|--------|-----------------|
+| GPS coordinates outside Bengaluru bounds | +60 |
+| Rain/AQI/heat > 3σ above historical average | +30 to +40 |
+| Multiple payouts within 2-minute window (different trigger types) | +50 |
+| Payout amount above expected range (> ₹2000) | +25 |
 
-| Parameter | Value |
-|---|---|
-| Weekly income | ₹5,600 |
-| Daily baseline | ₹800 |
-| Per disruption-day payout | ₹400 |
-| Maximum weekly payout | ₹800 (2 days) |
+- Score ≥ 80 → **HIGH** risk
+- Score ≥ 40 → **MEDIUM** risk
+- Flagged payouts shown on Admin dashboard for review
 
 ---
 
-## Premium Model
+### 3. AI Risk Forecast Module (Admin Dashboard)
 
-Premiums are priced at **3–5% of weekly income** — the industry benchmark for accessible gig worker parametric coverage.
+Runs the pricing model for every zone using live sensor data and displays a zone-level table with risk tier (LOW / MEDIUM / HIGH), predicted premium per worker, and 60-40 split breakdown. Updates on demand.
+
+---
+
+## The Oracle — Real-Time Sensor System
+
+The Oracle polls live APIs every 15-30 seconds and decides whether a trigger threshold has been breached. It is what makes QShield truly parametric.
+
+| Trigger | Threshold | Source | Type |
+|---------|-----------|--------|------|
+| Heavy Rain | ≥ 20 mm/hr | OpenWeatherMap API | Environmental |
+| Extreme Heat | ≥ 42°C | OpenWeatherMap API | Environmental |
+| Severe AQI | ≥ 350 | OpenAQ API | Environmental |
+| Platform Outage | App downtime ≥ 3hrs | Status API (mocked) | Technical |
+| Government Curfew | Active during 10am–10pm | Govt feed (mocked) | Social |
+
+When a trigger fires → backend calls `POST /api/payout/create` for every eligible worker in the zone automatically.
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | React (Vite), Plain CSS | Worker and Admin dashboards, live 30s polling |
+| Backend | FastAPI (Python 3.11) | REST API, policy engine, payout orchestration |
+| Database | PostgreSQL (Supabase) | Workers, payouts, policies, premiums tables |
+| ORM | SQLAlchemy | Database models and queries |
+| AI / ML | scikit-learn RandomForestRegressor | Dynamic premium pricing |
+| Data | pandas, numpy | Feature engineering, synthetic data generation |
+| Model Storage | joblib (.pkl files) | Save/load trained model |
+| Weather | OpenWeatherMap API | Live rain, heat, UV data |
+| AQI | OpenAQ API | Live air quality readings |
+| Frontend Hosting | Vercel | Auto-deploys from GitHub |
+| Backend Hosting | Render | FastAPI server, auto-deploys from GitHub |
+| Database Hosting | Supabase | Managed PostgreSQL |
+| API Docs | Swagger UI (/docs) | Built into FastAPI |
+
+---
+
+## Python Packages
+
+| Package | Why |
+|---------|-----|
+| `fastapi` | Web framework for all API endpoints |
+| `uvicorn` | ASGI server to run FastAPI |
+| `sqlalchemy` | ORM for PostgreSQL |
+| `psycopg2` | PostgreSQL driver |
+| `pydantic` | Request/response validation |
+| `scikit-learn` | RandomForestRegressor for the pricing model |
+| `pandas` | Data manipulation and feature DataFrames |
+| `numpy` | Numerical operations |
+| `joblib` | Save and load .pkl model files |
+| `httpx` / `requests` | Fetch live weather and AQI data |
+| `python-dotenv` | Environment variable management |
+
+---
+
+## What Was Built, Phase by Phase
+
+### Phase 1: Core Foundation
+- Worker registration and login
+- Policy creation (weekly coverage periods)
+- Oracle trigger system - rain, heat, AQI, curfew, outage endpoints
+- Worker dashboard showing coverage status and sensor readings
+- Admin dashboard with worker list
+
+### Phase 2: Automation
+- Zero-touch automated payouts - oracle fires, payout creates, no human needed
+- Payout cooldown - one payout per worker per trigger type per day (409 if duplicate)
+- Wallet system - workers have a balance, premiums deducted from it
+- Collect Premiums - admin deducts weekly premiums from all workers in one click
+- Loss ratio on admin dashboard (total payouts ÷ total premiums)
+- Polling-based UI - both dashboards refresh live data every 15–30s
+- Animated UPI payment receipt modal shown to worker on settlement
+
+### Phase 3: AI and Intelligence
+- Random Forest model trained on 9 features including claim history
+- Dynamic premium pricing - personalised per worker, not flat 8%
+- Claim count tracking - every payout increments `claim_count` in DB
+- Claim history surcharge - 6+ claims adds +1% risk factor
+- AI Risk Forecast module on admin panel — zone-level risk tiers from live model
+- Fraud detection engine - scores every payout, flags suspicious ones
+- Wallet balance display on worker dashboard with transaction log
+- Active Trigger column in Zone Table - derived from live oracle data
+- Worker premium column reads actual DB value, not a client-side estimate
+
+---
+
+## Project Structure
 
 ```
-Affordable Premium  =  Weekly Income × 5%
-Worker pays (60%)   =  Premium × 0.60
-Platform pays (40%) =  Premium × 0.40
+QCommerce-Parametric-Insurance/
+├── backend/
+│   ├── app/
+│   │   ├── api/              # worker_api.py, payout_api.py, premium_api.py, trigger routes
+│   │   ├── models/           # models.py (SQLAlchemy), qshield_risk_model.pkl
+│   │   ├── services/         # premium_service.py (AI pricing engine)
+│   │   └── core/             # database.py
+│   ├── data/                 # synthetic_worker_data.csv
+│   ├── generate_synthetic_data.py
+│   └── train_risk_model.py
+└── frontend/
+    └── src/
+        ├── pages/            # AdminDashboard.jsx, HomePage.jsx, LoginPage.jsx
+        ├── components/       # Admin_components/, Worker_components/
+        └── services/         # api.js
 ```
 
-**Example:**
+---
 
-| Parameter | Value |
-|---|---|
-| Weekly income | ₹5,600 |
-| Total weekly premium | ₹280 |
-| Worker contribution (60%) | ₹168/week ≈ ₹24/day |
-| Platform contribution (40%) | ₹112/week |
+## How to Run Locally
 
-### 60–40 Co-Pay Model
+### Backend
 
-Worker contributes 60% of premium, platform (Zepto/Blinkit) contributes 40%. This shared model ensures adoption stability, risk pooling balance, and financial sustainability. Platforms benefit by reducing worker churn during disruption events.
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Mac/Linux
+
+pip install -r requirements.txt
+```
+
+Create a `.env` file:
+```
+DATABASE_URL=postgresql://user:password@host/dbname
+```
+
+Train the AI model (only needed once):
+```bash
+python generate_synthetic_data.py
+python train_risk_model.py
+```
+
+Start the server:
+```bash
+uvicorn app.main:app --reload
+```
+
+API docs: http://localhost:8000/docs
 
 ---
 
-## AI-Based Weekly Premium Calculation
+### Frontend
 
-Phase 1 uses a rule-based approximation for disruption probability. Phase 2 will introduce a trained ML model (logistic regression baseline, with XGBoost as a target) using features such as historical weather patterns, zone AQI trends, and order volume data.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-The premium calculation is grounded in the **3–5% of weekly income** benchmark for parametric gig worker coverage, ensuring the premium is always affordable relative to earnings.
-
-Phase 1 uses a rule-based seasonal probability model to estimate disruption likelihood per zone — monsoon months get higher weight, known high-risk zones get a modifier. Phase 2 replaces this with a logistic regression model trained on historical weather, AQI, and order volume data, with XGBoost as the target architecture.
-
----
-
-## AI & Fraud Controls
-
-**Proof-of-Disruption Engine** — multi-signal validation before any disruption-day is confirmed:
-
-- Weather API data
-- Satellite rainfall verification
-- Traffic slowdown indicators
-- Platform order density drop
-- Official curfew/event data
-
-Disruption confirmed only when multiple signals align.
-
-**Additional Safety Controls:**
-
-- Weekly payout cap (max 2 days)
-- No stacking of multiple triggers per day
-- Zone locking for coverage week
-- Minimum prior activity requirement: ≥ 3 active delivery days in the prior week
-- No manual claim submissions
-- Z-score anomaly detection on claim frequency per worker vs zone baseline
+Open http://localhost:5173
 
 ---
 
-## Analytics Dashboard
+### Database — Adding New Columns
 
-### Worker Dashboard
+If you have an existing `workers` table, run these in your Postgres client (Supabase SQL editor):
 
-| Metric | Description |
-|---|---|
-| Active Coverage Status | Policy active/inactive with current week period shown |
-| Premium Paid | This week's total with 60/40 co-pay breakdown |
-| Earnings Protected | Cumulative payout received — current week + historical |
-| Disruption-Day Log | List of triggered days with trigger type and payout amount |
-| Remaining Payout Capacity | 0 / 1 / 2 days left this week |
-| Zone Risk Forecast | AI-predicted disruption probability for the next 3 days |
-
-### Admin / Insurer Dashboard
-
-| Metric | Description |
-|---|---|
-| Active Policies | Total enrolled workers and weekly premium pool size |
-| Loss Ratio (weekly) | Total payouts ÷ total premiums collected |
-| Disruption Frequency by Zone | Heatmap of trigger events across city zones |
-| Fraud Flags | Workers with anomalous claim patterns vs zone baseline |
-| Predictive Payout Forecast | Next-week expected claims based on weather outlook |
-| Premium Adequacy Tracker | Expected loss vs actual loss per zone |
+```sql
+ALTER TABLE workers ADD COLUMN IF NOT EXISTS claim_count INTEGER DEFAULT 0;
+ALTER TABLE workers ADD COLUMN IF NOT EXISTS total_payout_received FLOAT DEFAULT 0.0;
+```
 
 ---
 
-## System Architecture
+## Testing the Full AI Pipeline
 
-| Layer | Technology | Responsibility |
-|---|---|---|
-| Frontend | React (Vite) | Worker and Admin dashboards |
-| Backend | FastAPI (Python) | Policy engine, trigger validation, payout orchestration |
-| Database | PostgreSQL | Workers, policies, payouts, trigger event logs |
-| AI / ML Layer | Python — scikit-learn | Risk modelling and anomaly detection |
-| Weather API | OpenWeatherMap (free tier / mocked) | Real-time and historical weather data |
-| Order Data API | Platform API (mocked) | Zone-level order volume feed |
-| Payments | Razorpay Test Mode | Simulated payout disbursement |
+### Step 1: Register a worker
+```bash
+POST /api/worker/register
+{
+  "name": "TestWorker", "phone": "9999999999",
+  "zone": "Koramangala", "income": 7000,
+  "platform": "Swiggy", "password": "test123"
+}
+```
+✅ `premium_weekly` should be ~₹171, not ₹560. If it's ₹171, the AI model is pricing correctly.
 
----
+### Step 2: Build claim history (6 payouts, different trigger types)
+```bash
+POST /api/payout/create
+{ "worker_id": <id>, "amount": 500, "trigger_type": "RAIN", "audit_msg": "test" }
+# Repeat with HEAT, AQI, OUTAGE, CURFEW, then one more
+```
 
-## Platform Choice Justification
+### Step 3: Verify claim history updated
+```bash
+GET /api/worker/<id>
+# Should show: "claim_count": 6, "total_payout_received": 3000
+```
 
-We chose a web-first architecture for Phase 1 due to faster development cycles, easier API integration, and simplified dashboard management. The backend architecture is platform-agnostic and can support mobile applications in subsequent phases.
-
----
-
-## Technology Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React (Vite) |
-| Backend | FastAPI (Python 3.11+) |
-| Database | PostgreSQL 15 |
-| AI Layer | Python — scikit-learn, pandas |
-| External APIs | OpenWeatherMap, OpenAQ, Razorpay (all mocked in Phase 1) |
-
----
-
-## Business Viability
-
-- Revenue model: Premium pool — insurer retains surplus after payouts and costs
-- Weekly exposure cap limits worst-case loss per policy to 2 disruption-days
-- Probability-based pricing ensures premiums reflect actual risk per zone
-- Scalable zone-based deployment allows actuarial tuning per geography
-- B2B2C approach: Platforms subsidise 40% of premium as a worker retention benefit
+### Step 4: Collect premiums and verify surcharge
+```bash
+POST /api/worker/collect-premiums
+# premium_deducted for your worker should now be > 171.27
+# The +1% claim surcharge on 6 claims = ~₹42 more per week
+```
 
 ---
 
-## Development Roadmap
+## Key Accomplishments
 
-| Phase | Timeline | What We Build |
-|---|---|---|
-| Phase 1 — Seed | Mar 4–20 | System design, premium formula, trigger definitions, basic web prototype with mock data, worker and admin dashboard |
-| Phase 2 — Scale | Mar 21–Apr 4 | Worker registration, live policy creation, dynamic premium engine, 3–5 real API triggers, claims automation, Razorpay sandbox |
-| Phase 3 — Soar | Apr 5–17 | Advanced fraud detection, full analytics, predictive forecasting, mobile-responsive UI, demo video, pitch deck |
-
----
-
-## Core Value Proposition
-
-> A financially sustainable, AI-powered parametric income stabiliser designed specifically for Q-commerce delivery workers — protecting weekly earnings from measurable external disruptions with zero manual friction.
-
----
-
-## Getting Started - Adversarial Defense & Anti-Spoofing Strategy
-
-### The Threat Model
-
-A coordinated syndicate of workers uses GPS-spoofing apps to fake their location inside a declared weather disruption zone while remaining safely at home — triggering mass false payouts and draining the liquidity pool.
-
-### Why Our Architecture Is Already Harder To Exploit
-
-The most important thing to note: **ShieldPay never triggers a payout based on a worker's GPS location.** Triggers are zone-level, not worker-level. The system asks "is it raining heavily in Zone X?" — not "is this worker standing in rain?" This eliminates the most basic form of GPS spoofing entirely. A worker cannot fake their way into a payout by spoofing their coordinates because their coordinates are never the trigger input.
-
-What a bad actor would actually need to fake is a zone-wide order volume collapse — which requires manipulating platform-level data across hundreds of orders simultaneously, not just their own GPS.
+| Feature | Why It Matters |
+|---------|---------------|
+| Zero-touch payouts | Oracle detects threshold breach and fires payout with no human in the loop |
+| Dynamic AI pricing | Random Forest gives each worker a personalised premium based on 9 features |
+| Claim history pricing | Workers who claim more pay higher premiums similar real insurance |
+| Live fraud scoring | Every payout scored in real time against 4 signals, flagged to admin |
+| Zone-level AI forecast | Admin sees predicted risk tier per zone from live model output |
+| 60-40 co-pay model | Platform subsidises 40% of premium - financially modelled and enforced |
+| Low-income protection | Workers earning < ₹4000/week get a 50-50 split instead of 60-40 |
+| Full-stack end-to-end | React + FastAPI + PostgreSQL + ML model + live APIs are all connected |
 
 ---
 
-### 1. The Differentiation — Genuine Worker vs. Bad Actor
+## Known Limitations
 
-Our AI/ML layer differentiates between a genuinely stranded worker and a bad actor using **behavioral fingerprinting** across three dimensions:
-
-**Activity pattern before the disruption event**
-A genuine worker shows a natural trailing-off of completed orders as conditions worsen — order velocity drops gradually as the weather escalates. A spoofing worker shows an abrupt flat-zero from the start of the disruption window with no gradual decline, because they were never working to begin with.
-
-**Device and session signals**
-- App session activity during the claimed disruption window — is the delivery app open and actively pinging? A genuine worker stuck in rain will have an active session with GPS drift consistent with being stationary in one location. A spoofer's GPS trace is often suspiciously perfect — fixed coordinates with no natural drift, or coordinates that jump in ways inconsistent with how someone actually moves in a storm.
-- Battery drain and network signal patterns — extreme weather correlates with poor network signal. A worker reporting to be in a flood zone with a perfect 5-bar LTE signal is an anomaly worth flagging.
-
-**Zone-level cross-validation**
-Environmental triggers require a dual validation: the weather API must confirm the threshold AND zone-wide order volume must drop ≥ 25% vs the 4-week rolling baseline. A syndicate cannot fake the weather API. They can attempt to suppress orders by coordinating refusals — but a sudden coordinated refusal spike across a zone from a cluster of workers is itself a detectable anomaly, not a cover.
+- Premium deductions are not logged as separate DB records, only payout history is stored. A `premium_history` table would make the worker activity log more complete.
+- Collect Premiums is manual (admin clicks a button). A scheduled job using APScheduler would automate this every Monday.
+- The model was trained on synthetic data. Real-world accuracy would improve significantly with actual Bengaluru order and weather history.
+- Curfew and outage triggers are mocked. Production versions would connect to government APIs and real platform status feeds.
 
 ---
 
-### 2. The Data — What We Analyze To Detect A Fraud Ring
+## Note on "Zero-Touch"
 
-Beyond GPS coordinates, our fraud detection layer analyzes the following signals:
-
-| Signal | What It Catches |
-|---|---|
-| Claim timing correlation | Multiple workers in the same zone submitting within seconds of each other — genuine disruptions cause spread-out responses, not synchronized ones |
-| Historical claim rate per worker vs zone baseline | Z-score anomaly detection — workers whose claim rate is statistically improbable compared to peers in the same zone |
-| Order activity gap before disruption | Workers with zero delivery activity in the 2 hours before a disruption event are flagged — genuine workers are typically mid-shift when weather hits |
-| Device GPS drift pattern | Spoofed GPS coordinates show unnatural precision and lack the micro-movement noise of a real device being carried |
-| Social graph clustering | Workers who consistently claim on the same days, in the same zones, with no history of independent claim patterns — suggests coordination |
-| Enrollment timing vs forecast | Workers who enroll just before a high-probability disruption forecast (surge enrolments 24–48 hours before a rain event) trigger elevated scrutiny |
-
-The Z-score anomaly model is already part of our existing fraud controls layer — this simply extends it with the above features.
+The payout trigger is fully automated — no human initiates it. However, the premium collection step is currently manual (admin clicks Collect Premiums). A production deployment would automate this with a weekly scheduled job. The README previously described this as fully zero-touch, which was aspirational — the current implementation is zero-touch for payouts, manual for premium collection.
 
 ---
 
-### 3. The UX Balance — Flagging Without Penalizing Honest Workers
-
-False positives are a real risk. A genuine worker in a flood zone may have poor GPS signal, inconsistent app activity, and unusual behavior — precisely because they are in a genuine emergency. Our system handles this with a **tiered response, not a binary block**:
-
-**Tier 1 — Auto-approved (low anomaly score)**
-All signals align. Payout is processed automatically within minutes. No friction for the worker.
-
-**Tier 2 — Soft flag (moderate anomaly score)**
-Payout is held for up to 24 hours pending a lightweight passive review — no action required from the worker. The system checks if zone-level signals continue to corroborate the claim over the next few hours. If they do, payout auto-releases. The worker sees "Payout under verification — expected within 24 hours" in their dashboard, not a rejection.
-
-**Tier 3 — Hard flag (high anomaly score)**
-Payout is held and the worker receives a non-accusatory prompt: "We need to verify your activity for this disruption day. Please confirm you were active in [Zone X] on [Date]." One-tap confirmation with a passive check of app session logs. If confirmed, payout releases. If the worker cannot be verified, the claim is escalated to manual review — not auto-rejected.
-
-**The key principle:** the system never accuses a worker or denies a payout without evidence. A genuine network drop in bad weather is a known edge case — the 24-hour soft hold exists precisely to give the system time to gather corroborating signals before making a decision. Honest workers lose at most 24 hours. Bad actors are caught by the pattern across multiple claims over time, not by a single-event block.
-
----
-
-### What This Means For The Liquidity Pool
-
-A coordinated syndicate of 500 workers would need to:
-1. All be enrolled with ≥ 3 active days last week (can't mass-enroll day-of)
-2. Trigger a real zone-level order volume collapse (requires platform-side manipulation, not just GPS)
-3. Maintain individually natural behavioral fingerprints across all 500 accounts simultaneously
-4. Not trigger the social graph clustering detector by claiming in sync
-
-This raises the cost of a coordinated attack from "download a GPS spoofer" to "orchestrate a platform-level data manipulation while maintaining individual behavioral cover across 500 accounts." That is not a realistic attack surface for a Telegram syndicate.
-
-
+*Built by Team Zephyr*
+*Guidewire DEVTrails University Hackathon 2026*
