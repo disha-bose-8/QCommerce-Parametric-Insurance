@@ -39,6 +39,7 @@ class Payout(Base):
     trigger_type = Column(String)
     audit_trail  = Column(String, nullable=True)
     status       = Column(String, default="settled")
+    date         = Column(Date, default=date.today) 
     created_at   = Column(DateTime, default=datetime.utcnow)
 
 

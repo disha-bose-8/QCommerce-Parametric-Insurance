@@ -14,6 +14,7 @@ HEAT_THRESHOLD = 42.0      # degrees celsius
 AQI_THRESHOLD = 350        # hazardous per CPCB
 ORDER_DROP_PCT = 25.0      # zone orders must drop by 25% to confirm env trigger
 
+AQI_CITY_OVERRIDE = "Bengaluru"   # scoped to Bengaluru for demo 
 
 # checks rain using OpenWeatherMap
 async def check_rain(lat: float, lon: float) -> dict:
@@ -87,7 +88,7 @@ async def check_heat(lat: float, lon: float) -> dict:
 
 # checks AQI using AQICN — one simple call by city name
 async def check_aqi(city: str) -> dict:
-    city = "Bengaluru"  # hardcoding for now since AQICN free tier doesn't allow lat/lon queries — we can switch to WAQI later which does allow lat/lon
+    city = AQI_CITY_OVERRIDE  # hardcoding for now since AQICN free tier doesn't allow lat/lon queries — we can switch to WAQI later which does allow lat/lon
     url = f"https://api.waqi.info/feed/{city}/"
     params = {"token": settings.AQICN_API_KEY}
     
