@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
-from app.models.models import Worker
+from app.models.models import Worker, Policy
 from app.services.premium_service import calculate_premium
+from datetime import date
 
 router = APIRouter()
 
@@ -130,7 +131,24 @@ def collect_weekly_premiums(db: Session = Depends(get_db)):
     collected = []
     skipped   = []
 
+    week_start = date.today()
+
     for w in workers:
+        # Check if worker already has a policy for this week
+        existing_policy = db.query(Policy).filter(
+            Policy.worker_id == w.id,
+            Policy.week_start == week_start,
+            Policy.status == "active"
+        ).first()
+
+        if existing_policy:
+            skipped.append({
+                "worker_id": w.id,
+                "name":      w.name,
+                "reason":    "already paid this week",
+            })
+            continue
+
         # ── Re-calculate premium dynamically using AI risk model ────────────
         # This means the premium collected this week reflects the worker's
         # actual risk profile (zone, income tier) rather than a frozen flat 8%.
@@ -156,6 +174,16 @@ def collect_weekly_premiums(db: Session = Depends(get_db)):
 
         if (w.wallet_balance or 0) >= premium:
             w.wallet_balance = round(w.wallet_balance - premium, 2)
+            
+            # Record the policy creation for this week
+            new_policy = Policy(
+                worker_id=w.id,
+                week_start=week_start,
+                premium=premium,
+                status="active"
+            )
+            db.add(new_policy)
+            
             collected.append({
                 "worker_id":       w.id,
                 "name":            w.name,

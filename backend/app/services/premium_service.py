@@ -140,6 +140,7 @@ def calculate_premium(data: dict) -> dict:
     total_premium = weekly_income * risk_factor
     worker_pays   = total_premium * worker_split
     platform_pays = total_premium * (1 - worker_split)
+    
 
     # ── Cast everything to plain Python float before returning ────────────────
     # Prevents np.float64 from reaching psycopg2 / Postgres and causing

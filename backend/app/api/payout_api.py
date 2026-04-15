@@ -69,6 +69,8 @@ def create_payout(payload: PayoutCreate, db: Session = Depends(get_db)):
         if worker:
             worker.claim_count           = (worker.claim_count           or 0) + 1
             worker.total_payout_received = (worker.total_payout_received or 0.0) + payload.amount
+            # Credit the payout amount back into wallet (represents UPI credit)
+            worker.wallet_balance = round((worker.wallet_balance or 0.0) + payload.amount, 2)
 
         db.commit()
         db.refresh(new_payout)

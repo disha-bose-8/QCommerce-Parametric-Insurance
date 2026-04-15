@@ -208,10 +208,13 @@ QCommerce-Parametric-Insurance/
 │   │   └── core/             # database.py
 │   ├── data/                 # synthetic_worker_data.csv
 │   ├── generate_synthetic_data.py
-│   └── train_risk_model.py
+│   ├── train_risk_model.py
+│   └── main.py               # FastAPI entry point
 └── frontend/
     └── src/
-        ├── pages/            # AdminDashboard.jsx, HomePage.jsx, LoginPage.jsx
+        ├── pages/
+        │   ├── Admin_pages/  # AdminDashboard.jsx
+        │   └── Worker_pages/ # HomePage.jsx, LoginPage.jsx, RegisterPage.jsx, etc.
         ├── components/       # Admin_components/, Worker_components/
         └── services/         # api.js
 ```
@@ -244,7 +247,7 @@ python train_risk_model.py
 
 Start the server:
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
 API docs: http://localhost:8000/docs
@@ -263,18 +266,7 @@ Open http://localhost:5173
 
 ---
 
-### Database — Adding New Columns
 
-If you have an existing `workers` table, run these in your Postgres client (Supabase SQL editor):
-
-```sql
-ALTER TABLE workers ADD COLUMN IF NOT EXISTS claim_count INTEGER DEFAULT 0;
-ALTER TABLE workers ADD COLUMN IF NOT EXISTS total_payout_received FLOAT DEFAULT 0.0;
--- Add date column to payouts (required for dedup logic)
-ALTER TABLE payouts ADD COLUMN IF NOT EXISTS date DATE DEFAULT CURRENT_DATE;
-```
-
----
 
 ## Testing the Full AI Pipeline
 

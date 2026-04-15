@@ -33,6 +33,9 @@ def settle_all_active_workers(zone: str, trigger_type: str, raw_value: float):
                 created_at  = datetime.now(),
             )
             db.add(new_payout)
+
+            # Credit the payout amount back into wallet (represents UPI credit)
+            worker.wallet_balance = round((worker.wallet_balance or 0.0) + amount, 2)
             settled_count += 1
 
         db.commit()
