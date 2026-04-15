@@ -270,6 +270,8 @@ If you have an existing `workers` table, run these in your Postgres client (Supa
 ```sql
 ALTER TABLE workers ADD COLUMN IF NOT EXISTS claim_count INTEGER DEFAULT 0;
 ALTER TABLE workers ADD COLUMN IF NOT EXISTS total_payout_received FLOAT DEFAULT 0.0;
+-- Add date column to payouts (required for dedup logic)
+ALTER TABLE payouts ADD COLUMN IF NOT EXISTS date DATE DEFAULT CURRENT_DATE;
 ```
 
 ---
@@ -330,6 +332,9 @@ POST /api/worker/collect-premiums
 - Collect Premiums is manual (admin clicks a button). A scheduled job using APScheduler would automate this every Monday.
 - The model was trained on synthetic data. Real-world accuracy would improve significantly with actual Bengaluru order and weather history.
 - Curfew and outage triggers are mocked. Production versions would connect to government APIs and real platform status feeds.
+- AQI oracle is scoped to Bengaluru city.
+- Policy creation is currently triggered at registration. 
+  Weekly policy renewal is not yet automated.
 
 ---
 
