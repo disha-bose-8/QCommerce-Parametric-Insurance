@@ -19,6 +19,15 @@ Each worker gets a **personalised weekly premium** calculated by an AI model —
 
 ---
 
+## 🔐 Admin Demo Access
+To review the fraud detection engine, risk forecasting, and the payout management system, use the following credentials:
+
+* **Admin Phone:** `0000000000`
+* **Admin Password:** `admin123`
+* **Role:** Admin Dashboard Access
+
+---
+
 ## The Problem
 
 Delivery workers earn daily. One disruption day can mean no food on the table. They have zero protection against:
