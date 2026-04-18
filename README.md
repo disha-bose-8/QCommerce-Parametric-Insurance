@@ -9,6 +9,11 @@
 
 ---
 
+## Official Pitch Deck
+https://docs.google.com/presentation/d/1ggr2NQygJuR3Gvm5y1P_9aWJAURSr2q6/edit?usp=sharing&ouid=102625077749094941428&rtpof=true&sd=true
+
+---
+
 ## What is QShield?
 
 QShield is a weekly insurance product for Q-commerce delivery workers (Zepto, Blinkit, Swiggy Instamart). When something outside a worker's control stops them from working, QShield automatically detects it and sends money to their wallet — no human involved.
